@@ -35,25 +35,23 @@ class DonasiController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validasi Input
+        // 1. Validasi (Hapus validasi foto)
         $request->validate([
             'jenis_pakaian' => 'required|string|max:255',
-            'jumlah_pakaian' => 'required|integer|min:1',
+            'jumlah' => 'required|integer|min:1',
             'deskripsi' => 'nullable|string',
-            // Tambahkan validasi lain sesuai kebutuhan (misalnya, gambar)
         ]);
-
-        // 2. Simpan Data
+    
+        // 2. Simpan Data (Tanpa logika upload)
         Donasi::create([
-            'user_id' => Auth::id(), // Pastikan donasi terikat pada user yang login
+            'user_id' => Auth::id(),
             'jenis_pakaian' => $request->jenis_pakaian,
-            'jumlah' => $request->jumlah_pakaian, // Asumsi field di DB bernama 'jumlah'
+            'jumlah' => $request->jumlah,
             'deskripsi' => $request->deskripsi,
-            'status' => 'Tersedia', // Default status
+            'status' => 'Tersedia',
         ]);
-
-        // 3. Redirect dengan pesan sukses
-        return redirect()->route('donatur.donasi.index')->with('success', 'Donasi berhasil diunggah dan siap disalurkan!');
+    
+        return redirect()->route('donatur.donasi.index')->with('success', 'Donasi berhasil ditambahkan!');
     }
 
     /**

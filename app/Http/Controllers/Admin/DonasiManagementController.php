@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Donasi;
-use App\Models\PengajuanDonasi; // Diperlukan untuk list dan approve pengajuan
-use App\Models\JadwalKurir;     // Diperlukan untuk membuat tugas Kurir
-use App\Models\User;           // Diperlukan untuk mencari Kurir
+use App\Models\PengajuanDonasi;
+use App\Models\JadwalKurir;
+use App\Models\User;
 
 class DonasiManagementController extends Controller
 {
@@ -16,7 +16,7 @@ class DonasiManagementController extends Controller
      */
     public function index()
     {
-        // Ambil semua donasi dengan data Donatur (User)
+        // Menggunakan 'latest()' agar yang baru tampil diatas
         $donasis = Donasi::with('user')->latest()->get();
         return view('admin.donasi.index', compact('donasis'));
     }
@@ -27,9 +27,9 @@ class DonasiManagementController extends Controller
     public function updateStatus(Donasi $donasi)
     {
         // Tampilkan form update_status
-        return view('admin.donasi.update_status', compact('donasi')); 
+        return view('admin.donasi.update_status', compact('donasi'));
     }
-    
+
     /**
      * Proses update status donasi (3. Update status donasi)
      */
@@ -44,17 +44,19 @@ class DonasiManagementController extends Controller
         return redirect()->route('admin.donasi.index')->with('success', "Status donasi #{$donasi->id} berhasil diperbarui menjadi {$donasi->status}.");
     }
 
-
     /**
      * 4. Delete donasi
      */
     public function destroy(Donasi $donasi)
     {
-        // Anda mungkin perlu memastikan tidak ada pengajuan terkait yang masih aktif sebelum menghapus
-        // Jika Anda menggunakan onDelete('cascade') di migrasi, relasi terkait akan otomatis terhapus.
+        // Hapus file foto jika ada
+        if ($donasi->foto && \Storage::disk('public')->exists($donasi->foto)) {
+            \Storage::disk('public')->delete($donasi->foto);
+        }
 
         $donasi->delete();
-        return redirect()->route('admin.donasi.index')->with('success', 'Donasi berhasil dihapus secara permanen.');
+
+        return redirect()->route('admin.donasi.index')->with('success', 'Donasi berhasil dihapus.');
     }
 
     /**
@@ -70,12 +72,12 @@ class DonasiManagementController extends Controller
         // Anda dapat mengambil data lebih detail di sini untuk ditampilkan di laporan
 
         return view('admin.donasi.report', compact(
-            'total_donasi_selesai', 
-            'total_donasi_proses', 
+            'total_donasi_selesai',
+            'total_donasi_proses',
             'total_semua_donasi'
         ));
     }
-    
+
     // ===============================================
     // LOGIKA PENGAJUAN (ADMIN)
     // ===============================================
@@ -85,17 +87,19 @@ class DonasiManagementController extends Controller
      */
     public function listPengajuan()
     {
-        $pengajuans = PengajuanDonasi::with(['donasi.user', 'penerima.role'])
-                                      ->where('status', 'Menunggu')
-                                      ->latest()
-                                      ->get();
-        
+        // Mengambil semua pengajuan yang statusnya 'Menunggu'
+        $pengajuans = PengajuanDonasi::with(['donasi.user', 'penerima']) // Eager load relasi
+            ->where('status', 'Menunggu')
+            ->latest()
+            ->get();
+
         // Ambil Kurir yang tersedia untuk di-assign
         $kurirs = User::whereHas('role', function ($query) {
             $query->where('name', 'kurir');
         })->get();
 
-        return view('admin.donasi.list_pengajuan', compact('pengajuans', 'kurirs'));
+        // Mengembalikan view 'admin.pengajuan.index' (bukan admin.donasi.list_pengajuan agar konsisten folder)
+        return view('admin.pengajuan.index', compact('pengajuans', 'kurirs'));
     }
 
     /**
@@ -111,28 +115,33 @@ class DonasiManagementController extends Controller
         $request->validate([
             'kurir_id' => 'required|exists:users,id',
             'tanggal_ambil' => 'required|date',
-            'tanggal_kirim' => 'required|date|after_or_equal:tanggal_ambil',
+            // 'tanggal_kirim' bisa opsional atau wajib, sesuaikan kebutuhan. 
+            // Di sini saya buat wajib untuk kelengkapan jadwal.
+            'tanggal_kirim' => 'nullable|date|after_or_equal:tanggal_ambil', 
         ]);
 
         // 2. Update Status Pengajuan & Donasi
         $pengajuan->update(['status' => 'Diproses']);
-        $pengajuan->donasi->update(['status' => 'Dalam Pengiriman']);
+        
+        // Status Donasi diubah jadi 'Diajukan' atau 'Dalam Pengiriman' tergantung alur bisnis Anda.
+        // Jika 'Diajukan' berarti sudah dibooking. Jika 'Dalam Pengiriman' berarti kurir OTW.
+        // Mari kita set ke 'Diajukan' dulu agar sinkron dengan logika bahwa Kurir baru dijadwalkan.
+        $pengajuan->donasi->update(['status' => 'Diajukan']);
 
         // 3. Logika Membuat Jadwal Kurir (Tugas Pengiriman)
         
-        // Catatan: Anda HARUS memastikan kolom 'alamat' telah ditambahkan di tabel 'users' 
-        // dan diisi saat pendaftaran/update profil.
-        $alamat_donatur = $pengajuan->donasi->user->alamat ?? 'Alamat Donatur Belum Lengkap';
-        $alamat_penerima = $pengajuan->penerima->alamat ?? 'Alamat Penerima Belum Lengkap';
+        // Pastikan Anda menangani kasus jika alamat user kosong
+        // (Bisa gunakan accessor di Model User atau fallback string seperti di bawah)
+        $alamat_donatur = $pengajuan->donasi->user->alamat ?? 'Alamat Donatur (User ID: '.$pengajuan->donasi->user_id.')';
+        $alamat_penerima = $pengajuan->penerima->alamat ?? 'Alamat Penerima (User ID: '.$pengajuan->user_id.')';
 
         JadwalKurir::create([
             'kurir_id' => $request->kurir_id,
             'pengajuan_id' => $pengajuan->id,
             'tanggal_waktu_ambil' => $request->tanggal_ambil,
-            'tanggal_waktu_kirim' => $request->tanggal_kirim,
             'alamat_ambil' => $alamat_donatur,
             'alamat_kirim' => $alamat_penerima,
-            'status' => 'Menunggu Ambil',
+            'status' => 'Menunggu Ambil', // Status awal tugas kurir
         ]);
 
         return redirect()->route('admin.pengajuan.index')->with('success', 'Pengajuan berhasil disetujui dan tugas Kurir telah dibuat.');

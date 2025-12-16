@@ -11,14 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pengajuan_donasi', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('donasi_id')->constrained('donasis'); // Donasi yang diajukan
-        $table->foreignId('kebutuhan_id')->nullable()->constrained('kebutuhan_pakaian'); // Kebutuhan yang terdaftar
-        $table->foreignId('penerima_id')->constrained('users'); // User Penerima yang mengajukan
-        $table->enum('status', ['Menunggu', 'Diproses', 'Selesai', 'Dibatalkan'])->default('Menunggu');
-        $table->timestamps();
-    });
+        // Pastikan nama tabel di sini adalah 'pengajuan_donasis' (jamak/plural)
+        Schema::create('pengajuan_donasis', function (Blueprint $table) {
+            $table->id();
+            
+            // Relasi ke User (Penerima Donor)
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            
+            // Relasi ke Donasi (Barang yang diajukan)
+            $table->foreignId('donasi_id')->constrained('donasis')->onDelete('cascade');
+            
+            // Status Pengajuan
+            $table->enum('status', ['Menunggu', 'Diproses', 'Selesai', 'Dibatalkan'])->default('Menunggu');
+            
+            $table->timestamps();
+        });
     }
 
     /**
