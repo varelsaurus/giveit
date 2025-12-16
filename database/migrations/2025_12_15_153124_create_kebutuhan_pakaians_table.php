@@ -13,11 +13,18 @@ return new class extends Migration
     {
         Schema::create('kebutuhan_pakaians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Penerima
-            $table->string('jenis_pakaian');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('jenis_pakaian'); // atau nama_barang
             $table->integer('jumlah');
             $table->text('deskripsi')->nullable();
-            $table->enum('status', ['Belum Terpenuhi', 'Terpenuhi']).default('Belum Terpenuhi');
+            
+            // PERBAIKANNYA DI SINI:
+            // Pastikan pakai tanda panah (->) sebelum default
+            $table->string('status')->default('Belum Terpenuhi'); 
+            
+            // Kalau mau pakai ENUM, penulisannya harus begini (jangan lupa panahnya):
+            // $table->enum('status', ['Belum Terpenuhi', 'Terpenuhi'])->default('Belum Terpenuhi');
+        
             $table->timestamps();
         });
     }

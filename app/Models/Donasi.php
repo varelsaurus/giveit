@@ -14,4 +14,10 @@ class Donasi extends Model
     public function pengajuan() {
         return $this->hasOne(PengajuanDonasi::class);
     }
+
+    public function kebutuhan()
+    {
+        // Donasi ini menjawab kebutuhan yang mana?
+        return $this->belongsTo(KebutuhanPakaian::class, 'kebutuhan_id');
+    }
 }

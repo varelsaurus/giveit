@@ -59,8 +59,16 @@ Route::middleware('auth')->group(function () {
 
     // === ROLE DONATUR ===
     Route::middleware('role:donatur')->prefix('donatur')->name('donatur.')->group(function () {
-        // 1-4. CRUD Donasi
-        Route::resource('donasi', DonasiController::class);
+    
+    // Halaman list kebutuhan (Dashboard Donatur)
+    Route::get('/kebutuhan-mendesak', [DonasiController::class, 'index'])->name('donasi.index');
+    
+    // Form Donasi (Merespon Kebutuhan Tertentu)
+    Route::get('/bantu/{kebutuhanId}', [DonasiController::class, 'create'])->name('donasi.create');
+    
+    // Simpan Donasi
+    Route::post('/donasi', [DonasiController::class, 'store'])->name('donasi.store');
+
     });
 
     // === ROLE PENERIMA DONOR ===

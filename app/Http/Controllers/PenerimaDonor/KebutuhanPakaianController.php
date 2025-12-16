@@ -11,29 +11,33 @@ class KebutuhanPakaianController extends Controller
 {
     public function index()
     {
+        // Lihat request saya yang belum terpenuhi
         $kebutuhan = KebutuhanPakaian::where('user_id', Auth::id())->latest()->get();
         return view('penerima.kebutuhan.index', compact('kebutuhan'));
     }
-
+    
     public function create()
     {
         return view('penerima.kebutuhan.create');
     }
-
+    
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'jenis_pakaian' => 'required|string',
-            'jumlah' => 'required|integer',
+        $request->validate([
+            'jenis_pakaian' => 'required|string', // Misal: Selimut, Jaket
+            'jumlah' => 'required|integer|min:1',
             'deskripsi' => 'required|string',
         ]);
-
-        $validated['user_id'] = Auth::id();
-        $validated['status'] = 'Belum Terpenuhi';
-
-        KebutuhanPakaian::create($validated);
-
-        return redirect()->route('penerima.kebutuhan.index')->with('success', 'Kebutuhan diposting.');
+    
+        KebutuhanPakaian::create([
+            'user_id' => Auth::id(),
+            'jenis_pakaian' => $request->jenis_pakaian,
+            'jumlah' => $request->jumlah,
+            'deskripsi' => $request->deskripsi,
+            'status' => 'Belum Terpenuhi'
+        ]);
+    
+        return redirect()->route('penerima.kebutuhan.index')->with('success', 'Kebutuhan berhasil diposting! Menunggu donatur.');
     }
 
     public function edit(KebutuhanPakaian $kebutuhan)

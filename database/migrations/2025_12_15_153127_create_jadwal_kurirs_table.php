@@ -9,18 +9,19 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        // database/migrations/xxxx_create_jadwal_kurirs_table.php (Contoh)
         Schema::create('jadwal_kurirs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('kurir_id')->constrained('users'); // User Kurir
-            $table->foreignId('pengajuan_id')->constrained('pengajuan_donasi'); 
-            $table->dateTime('tanggal_waktu_ambil');
-            $table->dateTime('tanggal_waktu_kirim');
-            $table->string('alamat_ambil');
-            $table->string('alamat_kirim');
-            $table->enum('status', ['Menunggu Ambil', 'Dalam Perjalanan', 'Selesai'])->default('Menunggu Ambil');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Kurir yang ambil tugas
+            $table->foreignId('donasi_id')->constrained('donasis')->onDelete('cascade');
+            $table->foreignId('pengajuan_id')->constrained('pengajuan_donasis')->onDelete('cascade');
+            
+            $table->date('tanggal_pengiriman');
+            $table->string('estimasi_waktu'); // Contoh: "10:00 - 12:00"
+            
+            // Status: Menjemput Barang -> Mengantar Barang -> Selesai
+            $table->string('status')->default('Menjemput Barang'); 
             $table->timestamps();
         });
     }

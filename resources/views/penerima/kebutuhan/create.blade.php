@@ -1,49 +1,32 @@
-{{-- resources/views/penerima/kebutuhan/create.blade.php --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Posting Kebutuhan Baru') }}
+        </h2>
+    </x-slot>
 
-<x-penerima-layout>
-    <x-slot name="header">Buat Daftar Kebutuhan Pakaian</x-slot>
-
-    <form method="POST" action="{{ route('penerima.kebutuhan.store') }}" class="space-y-6">
-        @csrf
-
-        {{-- Jenis Pakaian --}}
-        <div>
-            <label for="jenis_pakaian" class="block text-sm font-medium text-gray-700">Jenis Pakaian yang Dibutuhkan</label>
-            <input type="text" name="jenis_pakaian" id="jenis_pakaian" required 
-                   value="{{ old('jenis_pakaian') }}"
-                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                   placeholder="Contoh: Seragam Sekolah, Pakaian Hangat Anak, dll.">
-            @error('jenis_pakaian')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
+    <div class="py-12">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    <form action="{{ route('penerima.kebutuhan.store') }}" method="POST">
+                        @csrf
+                        <div class="mb-4">
+                            <label class="block font-bold mb-2">Barang yang Dibutuhkan</label>
+                            <input type="text" name="jenis_pakaian" placeholder="Contoh: Selimut Tebal" class="w-full border-gray-300 rounded-md shadow-sm" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-bold mb-2">Jumlah (Pcs)</label>
+                            <input type="number" name="jumlah" class="w-full border-gray-300 rounded-md shadow-sm" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block font-bold mb-2">Ceritakan Kondisi/Alasan</label>
+                            <textarea name="deskripsi" rows="3" class="w-full border-gray-300 rounded-md shadow-sm" required></textarea>
+                        </div>
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Posting Sekarang</button>
+                    </form>
+                </div>
+            </div>
         </div>
-        
-        {{-- Jumlah Total Dibutuhkan --}}
-        <div>
-            <label for="jumlah_total" class="block text-sm font-medium text-gray-700">Jumlah Total Dibutuhkan (Unit)</label>
-            <input type="number" name="jumlah_total" id="jumlah_total" required min="1"
-                   value="{{ old('jumlah_total') }}"
-                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-            @error('jumlah_total')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        {{-- Deskripsi --}}
-        <div>
-            <label for="deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi Detail Kebutuhan (Ukuran, Warna, Kondisi)</label>
-            <textarea name="deskripsi" id="deskripsi" rows="4" 
-                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">{{ old('deskripsi') }}</textarea>
-            @error('deskripsi')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="flex items-center justify-end space-x-4">
-            <a href="{{ route('penerima.kebutuhan.index') }}" class="text-gray-600 hover:text-gray-800">Batal</a>
-            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md shadow-md">
-                Simpan Kebutuhan
-            </button>
-        </div>
-    </form>
-</x-penerima-layout>
+    </div>
+</x-app-layout>

@@ -9,16 +9,19 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('donasis', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained(); // Donatur
-        $table->string('jenis_pakaian');
-        $table->text('deskripsi')->nullable();
-        $table->enum('status', ['Tersedia', 'Diajukan', 'Dalam Pengiriman', 'Selesai'])->default('Tersedia');
-        $table->timestamps();
-    });
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Pemilik donasi (Donatur)
+            $table->string('nama_barang');
+            $table->text('deskripsi');
+            $table->string('image')->nullable();
+            $table->string('alamat_jemput')->nullable();
+            // Enum Status: Tersedia -> Butuh Kurir -> Proses Pengiriman -> Selesai
+            $table->string('status')->default('Tersedia'); 
+            $table->timestamps();
+        });
     }
 
     /**

@@ -12,15 +12,20 @@ return new class extends Migration
     public function up()
     {
         Schema::table('donasis', function (Blueprint $table) {
-            // Ganti 'jenis_pakaian' jadi 'nama_barang'
-            $table->integer('jumlah')->default(1)->after('nama_barang'); 
+            // Kolom ini nyambung ke tabel kebutuhan_pakaians
+            // Nullable = Donatur boleh donasi inisiatif sendiri tanpa ada request
+            $table->foreignId('kebutuhan_id')
+                  ->nullable()
+                  ->constrained('kebutuhan_pakaians')
+                  ->onDelete('set null');
         });
     }
     
     public function down()
     {
         Schema::table('donasis', function (Blueprint $table) {
-            $table->dropColumn('jumlah');
+            $table->dropForeign(['kebutuhan_id']);
+            $table->dropColumn('kebutuhan_id');
         });
     }
 };

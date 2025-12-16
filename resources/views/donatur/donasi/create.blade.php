@@ -1,40 +1,49 @@
-<x-donatur-layout>
-    <x-slot name="header">Unggah Donasi Baru</x-slot>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Formulir Donasi') }}
+        </h2>
+    </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white p-6 shadow-sm sm:rounded-lg">
-                
-                {{-- HAPUS enctype="multipart/form-data" --}}
-                <form method="POST" action="{{ route('donatur.donasi.store') }}" class="space-y-6">
-                    @csrf
-
-                    {{-- Jenis Pakaian --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Jenis Pakaian</label>
-                        <input type="text" name="jenis_pakaian" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-                    </div>
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
                     
-                    {{-- Jumlah --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Jumlah (Pcs/Stel)</label>
-                        <input type="number" name="jumlah" required min="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+                    <div class="mb-6 bg-blue-50 p-4 rounded border border-blue-200">
+                        <h3 class="font-bold text-blue-800">Anda akan membantu:</h3>
+                        <p><strong>Permintaan:</strong> {{ $kebutuhan->jenis_pakaian }} ({{ $kebutuhan->jumlah }} pcs)</p>
+                        <p><strong>Penerima:</strong> {{ $kebutuhan->user->name }}</p>
                     </div>
 
-                    {{-- Deskripsi --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                        <textarea name="deskripsi" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
-                    </div>
+                    <form action="{{ route('donatur.donasi.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="kebutuhan_id" value="{{ $kebutuhan->id }}">
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Barang yang Anda Donasikan</label>
+                            <input type="text" name="nama_barang" value="{{ $kebutuhan->jenis_pakaian }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
 
-                    {{-- Tombol --}}
-                    <div class="flex justify-end space-x-4">
-                        <a href="{{ route('donatur.donasi.index') }}" class="text-gray-600">Batal</a>
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md">Simpan</button>
-                    </div>
-                </form>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Jumlah yang Anda Kirim</label>
+                            <input type="number" name="jumlah" placeholder="Misal: 5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            <p class="text-xs text-gray-500 mt-1">Anda tidak harus memenuhi semua permintaan, semampunya saja.</p>
+                        </div>
 
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Pesan / Deskripsi Barang</label>
+                            <textarea name="deskripsi" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3" required placeholder="Contoh: Barang bekas layak pakai, sudah dicuci bersih."></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-end mt-4">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Kirim Donasi
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</x-donatur-layout>
+</x-app-layout>
