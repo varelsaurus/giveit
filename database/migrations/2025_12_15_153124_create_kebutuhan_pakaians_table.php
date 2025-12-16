@@ -9,16 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('kebutuhan_pakaian', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained()->unique(); // Penerima Donor
-        $table->string('jenis_pakaian');
-        $table->integer('jumlah_total');
-        $table->text('deskripsi')->nullable();
-        $table->timestamps();
-    });
+        Schema::create('kebutuhan_pakaians', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Penerima
+            $table->string('jenis_pakaian');
+            $table->integer('jumlah');
+            $table->text('deskripsi')->nullable();
+            $table->enum('status', ['Belum Terpenuhi', 'Terpenuhi']).default('Belum Terpenuhi');
+            $table->timestamps();
+        });
     }
 
     /**

@@ -1,27 +1,17 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Donasi extends Model
 {
-    use HasFactory;
+    protected $guarded = ['id'];
 
-    // Tambahkan properti ini agar data bisa disimpan
-    protected $fillable = [
-        'user_id',
-        'jenis_pakaian',
-        'jumlah',
-        'deskripsi',
-        // 'foto',
-        'status',
-    ];
-
-    // Tambahkan relasi ke User (agar kita tahu siapa pemilik donasi ini)
-    public function user()
-    {
+    public function user() { // Donatur
         return $this->belongsTo(User::class);
+    }
+    
+    public function pengajuan() {
+        return $this->hasOne(PengajuanDonasi::class);
     }
 }

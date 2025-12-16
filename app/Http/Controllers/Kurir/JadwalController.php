@@ -4,70 +4,90 @@ namespace App\Http\Controllers\Kurir;
 
 use App\Http\Controllers\Controller;
 use App\Models\JadwalKurir;
+use App\Models\PengajuanDonasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class JadwalController extends Controller
 {
-    /**
-     * Menampilkan daftar tugas milik kurir yang sedang login.
-     */
+    // Tampilkan Tugas Tersedia & Jadwal Saya
     public function index()
     {
-        // Ambil jadwal DIMANA kurir_id = ID user yang login
-        $jadwals = JadwalKurir::with(['pengajuan.donasi', 'pengajuan.penerima'])
-                    ->where('kurir_id', Auth::id())
-                    ->latest()
-                    ->get();
+        // 1. Tugas Tersedia: Pengajuan disetujui admin DAN Donasi butuh kurir
+        $tugasTersedia = PengajuanDonasi::where('status', 'Disetujui Admin')
+                            ->whereHas('donasi', function($q) {
+                                $q->where('status', 'Butuh Kurir');
+                            })
+                            ->with(['donasi.user', 'user']) // Load data donatur & penerima
+                            ->get();
 
-        return view('kurir.jadwal.index', compact('jadwals'));
+        // 2. Jadwal Saya: History tugas kurir yang sedang login
+        $jadwalSaya = JadwalKurir::where('user_id', Auth::id())
+                        ->with('donasi')
+                        ->latest()
+                        ->get();
+
+        return view('kurir.jadwal.index', compact('tugasTersedia', 'jadwalSaya'));
     }
 
-    /**
-     * Menampilkan detail tugas (alamat lengkap, no hp, dll).
-     */
-    public function show(JadwalKurir $jadwal)
+    // Form Ambil Tugas
+    public function create(Request $request)
     {
-        // Pastikan kurir hanya melihat jadwal miliknya sendiri
-        if ($jadwal->kurir_id !== Auth::id()) {
-            abort(403);
-        }
+        // Kita butuh ID pengajuan yang mau diambil
+        $pengajuanId = $request->query('pengajuan_id');
+        $pengajuan = PengajuanDonasi::findOrFail($pengajuanId);
 
-        return view('kurir.jadwal.show', compact('jadwal'));
+        return view('kurir.jadwal.create', compact('pengajuan'));
     }
 
-    /**
-     * Tampilkan form edit status (Opsional, atau bisa langsung di index/show).
-     */
-    public function edit(JadwalKurir $jadwal)
+    // Proses Simpan Jadwal (Saat Kurir klik "Ambil Tugas")
+    public function store(Request $request)
     {
-        if ($jadwal->kurir_id !== Auth::id()) {
-            abort(403);
-        }
-        return view('kurir.jadwal.edit', compact('jadwal'));
+        $request->validate([
+            'pengajuan_id' => 'required|exists:pengajuan_donasis,id',
+            'tanggal_pengiriman' => 'required|date|after_or_equal:today',
+            'estimasi_waktu' => 'required|string',
+        ]);
+
+        $pengajuan = PengajuanDonasi::findOrFail($request->pengajuan_id);
+
+        // 1. Buat Jadwal Kurir
+        JadwalKurir::create([
+            'user_id' => Auth::id(), // ID Kurir
+            'donasi_id' => $pengajuan->donasi_id,
+            'pengajuan_id' => $pengajuan->id,
+            'tanggal_pengiriman' => $request->tanggal_pengiriman,
+            'estimasi_waktu' => $request->estimasi_waktu,
+            'status' => 'Menjemput Barang',
+        ]);
+
+        // 2. Update Status Pengajuan & Donasi
+        $pengajuan->update(['status' => 'Kurir Menuju Lokasi']);
+        $pengajuan->donasi->update(['status' => 'Proses Pengiriman']);
+
+        return redirect()->route('kurir.jadwal.index')
+                         ->with('success', 'Tugas berhasil diambil!');
     }
 
-    /**
-     * Proses update status pengiriman.
-     */
+    // Update Status Pengiriman (Misal: Selesai)
     public function update(Request $request, JadwalKurir $jadwal)
     {
-        if ($jadwal->kurir_id !== Auth::id()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'status' => 'required|in:Menunggu Ambil,Dalam Perjalanan,Selesai,Gagal',
-        ]);
+        // Validasi: Pastikan ini jadwal milik kurir yang login
+        if($jadwal->user_id != Auth::id()) abort(403);
 
         $jadwal->update(['status' => $request->status]);
 
-        // OPSIONAL: Jika status Selesai, update juga status Pengajuan & Donasi jadi Selesai
-        if ($request->status == 'Selesai') {
-            $jadwal->pengajuan->update(['status' => 'Selesai']);
-            $jadwal->pengajuan->donasi->update(['status' => 'Selesai']);
+        if($request->status == 'Selesai') {
+            $jadwal->donasi->update(['status' => 'Selesai']);
+            $jadwal->pengajuan->update(['status' => 'Diterima']);
         }
 
-        return redirect()->route('kurir.jadwal.index')->with('success', 'Status pengiriman berhasil diperbarui.');
+        return back()->with('success', 'Status pengiriman diperbarui.');
+    }
+
+    public function destroy(JadwalKurir $jadwal)
+    {
+        // Opsi jika kurir membatalkan tugas (opsional logic)
+        return back()->with('error', 'Pembatalan harus hubungi admin.');
     }
 }

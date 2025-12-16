@@ -1,101 +1,42 @@
 <?php
-// app/Http/Controllers/Admin/UserController.php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Role;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    /**
-     * 2. Read user (semua role) - Index
-     */
-    public function index()
-    {
-        // Ambil semua user dengan role-nya
-        $users = User::with('role')->latest()->get();
-        return view('admin.user.index', compact('users'));
-    }
-
-    /**
-     * 1. Create user (assign kurir) - Tampilkan Form
-     */
-    public function create()
-    {
-        // Ambil role yang bisa di-assign oleh Admin (Kurir dan Admin)
-        $roles = Role::whereIn('name', ['kurir', 'admin'])->get();
-        return view('admin.user.create', compact('roles'));
-    }
-
-    /**
-     * 1. Create user (assign kurir) - Proses Store
-     */
+    // CREATE: Tambah User baru (Khususnya assign role Kurir)
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'role_id' => 'required|exists:roles,id',
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:8',
+            'role' => 'required|in:admin,penerima,donatur,kurir',
         ]);
 
         User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'], // Pastikan kolom role ada di tabel users
         ]);
 
-        return redirect()->route('admin.user.index')->with('success', 'User baru berhasil didaftarkan.');
+        return back()->with('success', 'User berhasil ditambahkan.');
     }
 
-    /**
-     * 3. Update user (semua role) - Tampilkan Form
-     */
-    public function edit(User $user)
-    {
-        $roles = Role::all(); // Admin bisa mengubah role siapapun
-        return view('admin.user.edit', compact('user', 'roles'));
-    }
-
-    /**
-     * 3. Update user (semua role) - Proses Update
-     */
+    // UPDATE: Reset password atau edit data
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role_id' => 'required|exists:roles,id',
-            'password' => 'nullable|string|min:8',
-        ]);
-
-        $data = $request->only('name', 'email', 'role_id');
-
+        // Logika update user standard
+        $user->update($request->only(['name', 'email']));
         if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+            $user->update(['password' => Hash::make($request->password)]);
         }
-
-        $user->update($data);
-
-        return redirect()->route('admin.user.index')->with('success', 'Data user berhasil diperbarui.');
-    }
-
-    /**
-     * 4. Delete user (semua role)
-     */
-    public function destroy(User $user)
-    {
-        // Optional: Tambahkan pengecekan agar Admin tidak bisa menghapus dirinya sendiri
-        if (auth()->id() === $user->id) {
-            return back()->with('error', 'Anda tidak dapat menghapus akun Admin yang sedang login.');
-        }
-        
-        $user->delete();
-        return redirect()->route('admin.user.index')->with('success', 'User berhasil dihapus.');
+        return back()->with('success', 'Data user diperbarui.');
     }
 }

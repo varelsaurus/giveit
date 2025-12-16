@@ -94,19 +94,8 @@ class DonasiController extends Controller
     /**
      * 4. Delete donasi (Menghapus donasi)
      */
-    public function destroy(Donasi $donasi)
-    {
-        if ($donasi->user_id !== Auth::id()) {
-            abort(403);
-        }
-        
-        // Jangan izinkan hapus jika donasi sudah diproses
-        if ($donasi->status !== 'Tersedia') {
-            return back()->with('error', 'Donasi yang sudah diproses tidak dapat dihapus.');
-        }
-
-        $donasi->delete();
-        
-        return redirect()->route('donatur.donasi.index')->with('success', 'Donasi berhasil dihapus.');
+    public function destroy(Donasi $donasi) {
+    if($donasi->status != 'Tersedia') {
+        return back()->with('error', 'Barang sedang diproses, tidak bisa dihapus.');
     }
 }
