@@ -9,54 +9,100 @@ use Illuminate\Http\Request;
 
 class DonasiManagementController extends Controller
 {
-    // List semua donasi (Menu Donasi)
+    /**
+     * 1. MENU KELOLA DATA DONASI
+     * Menampilkan semua donasi yang masuk dari Donatur.
+     */
     public function index()
     {
+        // Menggunakan variabel $donasis (JAMAK) karena datanya banyak
         $donasis = Donasi::with('user')->latest()->get();
         return view('admin.donasi.index', compact('donasis'));
     }
 
-    // List pengajuan masuk (Menu Persetujuan)
+    /**
+     * 2. MENU PERSETUJUAN PENGAJUAN
+     * Menampilkan request barang dari Penerima yang statusnya 'Menunggu'.
+     */
     public function listPengajuan()
     {
-        // Ambil pengajuan yang statusnya masih 'Menunggu'
         $pengajuan = PengajuanDonasi::with(['donasi', 'user'])
-                        ->where('status', 'Menunggu')
-                        ->get();
+                                    ->where('status', 'Menunggu')
+                                    ->latest()
+                                    ->get();
                         
         return view('admin.pengajuan.index', compact('pengajuan'));
     }
 
-    // UPDATE STATUS DONASI (Manual)
-    public function updateStatus(Donasi $donasis)
+    /**
+     * 3. HALAMAN EDIT STATUS (Form Update)
+     * Mengatasi error 'Undefined variable $donasi'
+     */
+    public function updateStatus($id)
     {
+        // Kita cari data berdasarkan ID
+        $donasi = Donasi::findOrFail($id);
+
+        // PENTING: Variabel '$donasi' (TUNGGAL) dikirim ke view
+        // Ini biar cocok dengan compact('donasi')
         return view('admin.donasi.edit-status', compact('donasi'));
     }
 
-    public function updateStatusProcess(Request $request, Donasi $donasis)
+    /**
+     * 4. PROSES SIMPAN STATUS BARU
+     * Admin mengubah status manual (misal: Tersedia -> Butuh Kurir)
+     */
+    public function updateStatusProcess(Request $request, $id)
     {
-        $donasis->update(['status' => $request->status]);
-        return redirect()->route('admin.donasi.index')->with('success', 'Status donasi diperbarui');
+        $request->validate([
+            'status' => 'required|in:Tersedia,Butuh Kurir,Proses Pengiriman,Selesai'
+        ]);
+
+        $donasi = Donasi::findOrFail($id);
+        
+        $donasi->update([
+            'status' => $request->status
+        ]);
+
+        return redirect()->route('admin.donasi.index')->with('success', 'Status donasi berhasil diperbarui.');
     }
 
-    // APPROVE PENGAJUAN (PENTING: Hanya ubah status, Kurir yang ambil nanti)
-    public function approvePengajuan(Request $request, PengajuanDonasi $pengajuan)
+    /**
+     * 5. APPROVE PENGAJUAN
+     * Saat Admin menyetujui pengajuan penerima.
+     * Logika: Status Pengajuan -> Disetujui, Status Donasi -> Butuh Kurir.
+     */
+    public function approvePengajuan(Request $request, $id)
     {
-        // 1. Ubah status pengajuan
+        // Cari pengajuan
+        $pengajuan = PengajuanDonasi::findOrFail($id);
+
+        // 1. Ubah status pengajuan jadi Disetujui
         $pengajuan->update(['status' => 'Disetujui Admin']);
 
-        // 2. Ubah status donasi jadi 'Butuh Kurir' agar muncul di dashboard Kurir
-        $pengajuan->donasi->update(['status' => 'Butuh Kurir']);
+        // 2. Ubah status Barang Donasi jadi 'Butuh Kurir'
+        // Supaya otomatis muncul di Dashboard Kurir
+        if($pengajuan->donasi) {
+            $pengajuan->donasi->update(['status' => 'Butuh Kurir']);
+        }
 
-        return back()->with('success', 'Pengajuan disetujui. Menunggu Kurir mengambil tugas.');
+        return back()->with('success', 'Pengajuan disetujui. Barang kini berstatus "Butuh Kurir".');
     }
 
-    public function destroy(Donasi $donasis)
+    /**
+     * 6. HAPUS DONASI
+     */
+    public function destroy($id)
     {
-        $donasis->delete();
-        return back()->with('success', 'Donasi dihapus');
+        $donasi = Donasi::findOrFail($id);
+        $donasi->delete();
+        
+        return back()->with('success', 'Data donasi berhasil dihapus.');
     }
     
+    /**
+     * 7. LAPORAN DONASI
+     */
     public function generateReport()
     {
         $donasis = Donasi::with('user')->latest()->get();
