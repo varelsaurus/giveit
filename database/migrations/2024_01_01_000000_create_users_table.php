@@ -13,9 +13,18 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('role_id')->nullable()->constrained();
+            
+            // PERBAIKAN 1: Gunakan String untuk Role & Set Default Donatur
+            // Ini biar sinkron sama RegisteredUserController yang kita bahas tadi
+            $table->string('role')->default('donatur'); 
+            
             $table->string('name');
             $table->string('email')->unique();
+            
+            // PERBAIKAN 2: Tambah Alamat & No HP (Biasanya butuh buat kurir/donasi)
+            $table->text('alamat')->nullable();
+            $table->string('no_hp')->nullable();
+
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
