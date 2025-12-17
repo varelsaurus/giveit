@@ -13,7 +13,7 @@ class DonasiManagementController extends Controller
     public function index()
     {
         $donasi = Donasi::with('user')->latest()->get();
-        return view('admin.donasi.index', compact('donasi'));
+        return view('admin.donasi.index', compact('donasis'));
     }
 
     // List pengajuan masuk (Menu Persetujuan)
