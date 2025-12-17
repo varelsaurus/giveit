@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Kurir yang ambil tugas
             $table->foreignId('donasi_id')->constrained('donasis')->onDelete('cascade');
-            $table->foreignId('pengajuan_id')->constrained('pengajuan_donasis')->onDelete('cascade');
+            $table->foreignId('pengajuan_id')->nullable()->constrained('pengajuan_donasis')->onDelete('cascade');
             
             $table->date('tanggal_pengiriman');
             $table->string('estimasi_waktu'); // Contoh: "10:00 - 12:00"

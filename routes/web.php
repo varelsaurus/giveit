@@ -86,9 +86,25 @@ Route::middleware('auth')->group(function () {
     });
 
     // === ROLE KURIR ===
-    Route::middleware('role:kurir')->prefix('kurir')->name('kurir.')->group(function () {
-        // 1-4. CRUD Jadwal Pengantaran
-        Route::resource('jadwal', JadwalController::class);
+    // routes/web.php
+
+    Route::middleware(['auth', 'role:kurir'])->prefix('kurir')->name('kurir.')->group(function () {
+    // READ (Dashboard)
+    Route::get('/jadwal', [App\Http\Controllers\Kurir\JadwalController::class, 'index'])->name('jadwal.index');
+    
+    // CREATE (Form Ambil Tugas)
+    Route::get('/jadwal/create/{donasi_id}', [App\Http\Controllers\Kurir\JadwalController::class, 'create'])->name('jadwal.create');
+    Route::post('/jadwal/{donasi_id}', [App\Http\Controllers\Kurir\JadwalController::class, 'store'])->name('jadwal.store');
+    
+    // UPDATE (Form Edit Jadwal)
+    Route::get('/jadwal/{id}/edit', [App\Http\Controllers\Kurir\JadwalController::class, 'edit'])->name('jadwal.edit');
+    Route::put('/jadwal/{id}', [App\Http\Controllers\Kurir\JadwalController::class, 'update'])->name('jadwal.update');
+
+    // DELETE (Batalkan Tugas)
+    Route::delete('/jadwal/{id}', [App\Http\Controllers\Kurir\JadwalController::class, 'destroy'])->name('jadwal.destroy');
+    
+    // SELESAIKAN TUGAS (Action button saja)
+    Route::patch('/jadwal/{id}/selesai', [App\Http\Controllers\Kurir\JadwalController::class, 'selesaikan'])->name('jadwal.selesaikan');
     });
     
     // === PROFIL DEFAULT BREEZE (Untuk Semua Role) ===
