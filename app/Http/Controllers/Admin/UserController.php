@@ -31,7 +31,11 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+<<<<<<< Updated upstream
             'role' => ['required', 'in:admin,donatur,penerima,penerima_donor,kurir'], 
+=======
+            'role' => ['required', 'in:admin,donatur,penerima,penerima_donor,kurir'], // Sesuaikan opsi role
+>>>>>>> Stashed changes
         ]);
 
         User::create([
@@ -81,6 +85,10 @@ class UserController extends Controller
     // 6. DESTROY: Menghapus user
     public function destroy(User $user)
     {
+<<<<<<< Updated upstream
+=======
+        // Cegah admin menghapus dirinya sendiri
+>>>>>>> Stashed changes
         if (auth()->id() == $user->id) {
             return back()->with('error', 'Anda tidak bisa menghapus akun sendiri.');
         }
