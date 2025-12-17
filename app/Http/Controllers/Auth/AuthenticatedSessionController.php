@@ -8,8 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use App\Models\User; // Tambahkan ini untuk akses model User
-use App\Providers\RouteServiceProvider; // Tambahkan ini untuk akses fallback route
+use App\Models\User; 
+use App\Providers\RouteServiceProvider; 
 
 class AuthenticatedSessionController extends Controller
 {
@@ -41,25 +41,23 @@ class AuthenticatedSessionController extends Controller
     {
         // Pastikan user memiliki role
         if (!$user->role) {
-            // Fallback default jika role tidak ada (seperti default Breeze)
             return RouteServiceProvider::HOME; 
         }
 
-        switch ($user->role->name) {
+        // PERBAIKAN DI SINI:
+        // Kita langsung cek ($user->role) karena isinya string "admin", "kurir", dll.
+        // Tidak perlu pakai ->name lagi.
+        switch ($user->role) { 
             case 'admin':
-                // Rute yang kita definisikan: /admin/user
                 return route('admin.user.index');
                 
             case 'donatur':
-                // Rute yang kita definisikan: /donatur/donasi
                 return route('donatur.donasi.index');
                 
             case 'penerima_donor':
-                // Rute yang kita definisikan: /penerima/kebutuhan
                 return route('penerima.kebutuhan.index');
                 
             case 'kurir':
-                // Rute yang kita definisikan: /kurir/jadwal
                 return route('kurir.jadwal.index');
                 
             default:
@@ -74,7 +72,6 @@ class AuthenticatedSessionController extends Controller
     {
         $redirectUrl = $this->getRedirectRoute($user);
         
-        // Menggunakan redirect()->intended() jika ada URL yang dicoba diakses sebelum login.
         return redirect()->intended($redirectUrl);
     }
 

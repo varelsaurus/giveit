@@ -1,19 +1,27 @@
 <?php
 
-// app/Models/User.php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $guarded = ['id']; // Gunakan guarded agar lebih mudah
+    /**
+     * The attributes that are mass assignable.
+     * Kita gunakan $fillable agar jelas kolom apa saja yang boleh diisi.
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',     // PENTING: Kolom role string
+        'alamat',   // Tambahan dari migration tadi
+        'no_hp',    // Tambahan dari migration tadi
+    ];
 
     protected $hidden = [
         'password',
@@ -27,18 +35,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
-    // ===================================
-    // RELASI
-    // ===================================
 
-    /**
-     * User selalu memiliki satu role.
-     */
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
-    }
+    // ===================================
+    // PERHATIAN: 
+    // FUNGSI public function role() SUDAH DIHAPUS 
+    // KARENA KITA TIDAK PAKAI TABEL ROLES LAGI
+    // ===================================
 
     // ===================================
     // HELPER METHOD UNTUK CEK ROLE
@@ -51,12 +53,15 @@ class User extends Authenticatable
      */
     public function hasRole(string|array $roles): bool
     {
+        // Jika inputnya array (misal: ['admin', 'kurir'])
         if (is_array($roles)) {
-            // Cek apakah role user ada di dalam array $roles
-            return in_array($this->role->name, $roles);
+            // Cek apakah 'role' (string) milik user ada di dalam array tersebut
+            return in_array($this->role, $roles);
         }
         
-        // Cek jika hanya string tunggal
-        return $this->role->name === $roles;
+        // Jika inputnya string tunggal (misal: 'admin')
+        // Bandingkan langsung string ketemu string.
+        // JANGAN PAKAI ->name LAGI
+        return $this->role === $roles;
     }
 }
