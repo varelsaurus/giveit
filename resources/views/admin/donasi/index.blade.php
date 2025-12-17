@@ -15,7 +15,15 @@
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-lg font-bold mb-4">Semua Donasi Masuk</h3>
+                
+                {{-- HEADER & TOMBOL BACK KE USER --}}
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">Semua Donasi Masuk</h3>
+                    
+                    <a href="{{ route('admin.user.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition duration-150 ease-in-out">
+                        &larr; Kembali ke User
+                    </a>
+                </div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -28,13 +36,12 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            {{-- PERHATIKAN: Disini pakai $donasis (sesuai controller baru) --}}
                             @forelse($donasis as $item)
                             <tr>
                                 <td class="px-6 py-4">{{ $item->user->name }}</td>
                                 <td class="px-6 py-4">
-                                    {{ $item->nama_barang }} <br>
-                                    <span class="text-xs text-gray-500">{{ $item->jumlah }} Pcs</span>
+                                    <div class="text-sm text-gray-900">{{ $item->nama_barang }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->jumlah }} Pcs</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     @php

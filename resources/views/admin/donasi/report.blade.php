@@ -1,32 +1,62 @@
-{{-- resources/views/admin/donasi/report.blade.php --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Laporan Donasi') }}
+        </h2>
+    </x-slot>
 
-<x-admin-layout>
-    <x-slot name="header">Laporan Histori Donasi</x-slot>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold">Rekapitulasi Donasi</h3>
+                    <a href="{{ route('dashboard') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                        &larr; Kembali ke Dashboard
+                    </a>
+                </div>
 
-    <div class="bg-gray-50 border p-6 rounded-lg">
-        <h4 class="text-2xl font-bold mb-4 text-green-700">Ringkasan Statistik Donasi</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 border">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Donatur</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($donasis as $item)
+                            <tr>
+                                <td class="px-6 py-4">{{ $item->created_at->format('d M Y') }}</td>
+                                <td class="px-6 py-4">{{ $item->user->name }}</td>
+                                <td class="px-6 py-4">
+                                    {{ $item->nama_barang }} <br>
+                                    <span class="text-xs text-gray-500">{{ $item->jumlah }} Pcs</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        {{ $item->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center">Data kosong.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
-        <div class="grid grid-cols-3 gap-4 text-center">
-            <div class="bg-white p-4 rounded-lg shadow">
-                <p class="text-3xl font-bold text-indigo-600">{{ $total_donasi_selesai ?? '0' }}</p>
-                <p class="text-sm text-gray-500">Donasi Selesai (Tersalurkan)</p>
-            </div>
-             <div class="bg-white p-4 rounded-lg shadow">
-                <p class="text-3xl font-bold text-yellow-600">{{ $total_donasi_proses ?? '0' }}</p>
-                <p class="text-sm text-gray-500">Donasi Dalam Proses</p>
-            </div>
-             <div class="bg-white p-4 rounded-lg shadow">
-                <p class="text-3xl font-bold text-gray-600">{{ $total_semua_donasi ?? '0' }}</p>
-                <p class="text-sm text-gray-500">Total Semua Donasi</p>
+                <div class="mt-4">
+                    <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
+                        Cetak Laporan (PDF)
+                    </button>
+                </div>
+
             </div>
         </div>
-
-        <div class="mt-8">
-            <h5 class="text-xl font-semibold mb-3">Histori Donasi Detail</h5>
-            {{-- Placeholder untuk tabel yang berisi semua data donasi, pengajuan, dan jadwal --}}
-            <p class="text-gray-500 italic">Data histori donasi lengkap (yang mencakup Donasi, Penerima, Kurir, dan Status Akhir) akan ditampilkan di sini. Logika pengambilan data perlu diimplementasikan di Admin/DonasiManagementController@generateReport.</p>
-        </div>
-
     </div>
-
-</x-admin-layout>
+</x-app-layout>

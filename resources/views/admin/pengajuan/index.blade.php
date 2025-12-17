@@ -7,17 +7,24 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                
+                @if(session('success'))
+                    <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                {{-- HEADER & TOMBOL BACK KE USER --}}
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Daftar Pengajuan Masuk</h3>
                     
-                    @if(session('success'))
-                        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                            {{ session('success') }}
-                        </div>
-                    @endif
+                    <a href="{{ route('admin.user.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition duration-150 ease-in-out">
+                        &larr; Kembali ke User
+                    </a>
+                </div>
 
-                    <h3 class="text-lg font-bold mb-4">Daftar Pengajuan Masuk</h3>
-
+                <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -32,14 +39,14 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $item->user->name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $item->donasi->nama_barang }} <br>
-                                    <span class="text-xs text-gray-500">Oleh: {{ $item->donasi->user->name }}</span>
+                                    <div class="text-sm text-gray-900">{{ $item->donasi->nama_barang }}</div>
+                                    <div class="text-xs text-gray-500">Oleh: {{ $item->donasi->user->name }}</div>
                                 </td>
                                 <td class="px-6 py-4">{{ $item->alasan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <form action="{{ route('admin.pengajuan.approve', $item->id) }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm shadow">
                                             Setujui
                                         </button>
                                     </form>

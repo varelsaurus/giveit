@@ -12,7 +12,7 @@ class DonasiManagementController extends Controller
     // List semua donasi (Menu Donasi)
     public function index()
     {
-        $donasi = Donasi::with('user')->latest()->get();
+        $donasis = Donasi::with('user')->latest()->get();
         return view('admin.donasi.index', compact('donasis'));
     }
 
@@ -28,14 +28,14 @@ class DonasiManagementController extends Controller
     }
 
     // UPDATE STATUS DONASI (Manual)
-    public function updateStatus(Donasi $donasi)
+    public function updateStatus(Donasi $donasis)
     {
         return view('admin.donasi.edit-status', compact('donasi'));
     }
 
-    public function updateStatusProcess(Request $request, Donasi $donasi)
+    public function updateStatusProcess(Request $request, Donasi $donasis)
     {
-        $donasi->update(['status' => $request->status]);
+        $donasis->update(['status' => $request->status]);
         return redirect()->route('admin.donasi.index')->with('success', 'Status donasi diperbarui');
     }
 
@@ -51,14 +51,15 @@ class DonasiManagementController extends Controller
         return back()->with('success', 'Pengajuan disetujui. Menunggu Kurir mengambil tugas.');
     }
 
-    public function destroy(Donasi $donasi)
+    public function destroy(Donasi $donasis)
     {
-        $donasi->delete();
+        $donasis->delete();
         return back()->with('success', 'Donasi dihapus');
     }
     
     public function generateReport()
     {
-        return view('admin.report.index');
+        $donasis = Donasi::with('user')->latest()->get();
+        return view('admin.report.index', compact('donasis'));
     }
 }
