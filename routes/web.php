@@ -6,11 +6,11 @@ use App\Http\Controllers\ProfileController;
 // --- IMPORT CONTROLLER ---
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DonasiManagementController;
-// PENTING: Import Controller Report yang baru dibuat
 use App\Http\Controllers\Admin\ReportController; 
 use App\Http\Controllers\Donatur\DonasiController;
 use App\Http\Controllers\Penerima\KebutuhanController;
 use App\Http\Controllers\Penerima\PengajuanController;
+use App\Http\Controllers\Admin\BeritaController;
 use App\Http\Controllers\Kurir\JadwalController;
 
 /*
@@ -46,6 +46,12 @@ Route::middleware('auth')->group(function () {
         // --- MANAGE DONASI ---
         Route::get('donasi', [DonasiManagementController::class, 'index'])->name('donasi.index'); 
         
+        // --- MANAGE BERITA (FIXED) ---
+        // Tambahkan parameters agar tidak dibaca sebagai 'beritum'
+        Route::resource('berita', BeritaController::class)->parameters([
+            'berita' => 'berita'
+        ]);
+
         // Update Status Donasi
         Route::get('donasi/{id}/status', [DonasiManagementController::class, 'updateStatus'])->name('donasi.updateStatus');
         Route::patch('donasi/{id}/status', [DonasiManagementController::class, 'updateStatusProcess'])->name('donasi.updateStatusProcess');
@@ -56,8 +62,6 @@ Route::middleware('auth')->group(function () {
         Route::post('pengajuan/{id}/approve', [DonasiManagementController::class, 'approvePengajuan'])->name('pengajuan.approve');
 
         // --- MANAGE REPORT (CREATE REPORT) ---
-        // Menggunakan ReportController (Fitur Arsip/Input Laporan)
-        // Ini menggantikan fitur print lama yang error variabel.
         Route::resource('report', ReportController::class);
     });
 
