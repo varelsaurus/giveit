@@ -1,69 +1,62 @@
-{{-- resources/views/donatur/donasi/edit.blade.php --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Edit Donasi') }}
+        </h2>
+    </x-slot>
 
-<x-donatur-layout>
-    <x-slot name="header">Edit Donasi #{{ $donasi->id }}</x-slot>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-    @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
+                {{-- PERBAIKAN 1: Form Action ke 'donasi.update' --}}
+                <form action="{{ route('donasi.update', $donasi->id) }}" method="POST">
+                    @csrf
+                    @method('PUT') 
+
+                    {{-- Nama Barang --}}
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Nama Barang</label>
+                        <input type="text" name="nama_barang" 
+                               value="{{ old('nama_barang', $donasi->nama_barang) }}" 
+                               class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full"
+                               required>
+                        <x-input-error :messages="$errors->get('nama_barang')" class="mt-2" />
+                    </div>
+
+                    {{-- Jumlah --}}
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Jumlah</label>
+                        <input type="number" name="jumlah" 
+                               value="{{ old('jumlah', $donasi->jumlah) }}" 
+                               class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full"
+                               required>
+                        <x-input-error :messages="$errors->get('jumlah')" class="mt-2" />
+                    </div>
+
+                    {{-- Deskripsi --}}
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Deskripsi</label>
+                        <textarea name="deskripsi" rows="3" 
+                                  class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full"
+                                  required>{{ old('deskripsi', $donasi->deskripsi) }}</textarea>
+                        <x-input-error :messages="$errors->get('deskripsi')" class="mt-2" />
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        {{-- PERBAIKAN 2: Tombol Batal arahkan ke 'donasi.index' --}}
+                        <a href="{{ route('donasi.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                            Batal
+                        </a>
+                        
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
         </div>
-    @endif
-
-    {{-- Logika untuk mencegah edit jika status bukan 'Tersedia' --}}
-    @if ($donasi->status !== 'Tersedia')
-        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
-            <p class="font-bold">Perhatian</p>
-            <p>Donasi ini tidak dapat diubah karena statusnya saat ini adalah: **{{ $donasi->status }}**.</p>
-        </div>
-        <div class="mt-6">
-            <a href="{{ route('donatur.donasi.show', $donasi) }}" class="text-gray-600 hover:text-gray-800">
-                &larr; Lihat Detail Donasi
-            </a>
-        </div>
-    @else
-        {{-- Form Edit --}}
-        <form method="POST" action="{{ route('donatur.donasi.update', $donasi) }}" class="space-y-6">
-            @csrf
-            @method('PATCH') {{-- Menggunakan metode PATCH untuk UPDATE --}}
-
-            {{-- Jenis Pakaian --}}
-            <div>
-                <label for="jenis_pakaian" class="block text-sm font-medium text-gray-700">Jenis Pakaian</label>
-                <input type="text" name="jenis_pakaian" id="jenis_pakaian" required 
-                       value="{{ old('jenis_pakaian', $donasi->jenis_pakaian) }}"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                @error('jenis_pakaian')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Jumlah Pakaian (Biasanya tidak boleh diubah jika sudah ada pengajuan, tapi kita biarkan dulu) --}}
-            <div>
-                <label for="jumlah_pakaian" class="block text-sm font-medium text-gray-700">Jumlah Pakaian (Satuan)</label>
-                <input type="number" name="jumlah" id="jumlah" required min="1"
-                       value="{{ old('jumlah', $donasi->jumlah) }}"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                @error('jumlah')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Deskripsi --}}
-            <div>
-                <label for="deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi/Keterangan</label>
-                <textarea name="deskripsi" id="deskripsi" rows="4" 
-                          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">{{ old('deskripsi', $donasi->deskripsi) }}</textarea>
-                @error('deskripsi')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="flex items-center justify-end space-x-4">
-                <a href="{{ route('donatur.donasi.show', $donasi) }}" class="text-gray-600 hover:text-gray-800">Batal</a>
-                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md shadow-md">
-                    Simpan Perubahan
-                </button>
-            </div>
-        </form>
-    @endif
-</x-donatur-layout>
+    </div>
+</x-app-layout>

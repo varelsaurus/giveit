@@ -1,49 +1,40 @@
-{{-- resources/views/penerima/kebutuhan/edit.blade.php --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Edit Kebutuhan
+        </h2>
+    </x-slot>
 
-<x-penerima-layout>
-    <x-slot name="header">Update Kebutuhan Pakaian</x-slot>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-    <form method="POST" action="{{ route('penerima.kebutuhan.update', $kebutuhan) }}" class="space-y-6">
-        @csrf
-        @method('PATCH')
+                <form action="{{ route('penerima.kebutuhan.update', $kebutuhan->id) }}" method="POST">
+                    @csrf
+                    
+                    @method('PUT') 
 
-        {{-- Jenis Pakaian --}}
-        <div>
-            <label for="jenis_pakaian" class="block text-sm font-medium text-gray-700">Jenis Pakaian yang Dibutuhkan</label>
-            <input type="text" name="jenis_pakaian" id="jenis_pakaian" required 
-                   value="{{ old('jenis_pakaian', $kebutuhan->jenis_pakaian) }}"
-                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-            @error('jenis_pakaian')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Jenis Pakaian</label>
+                        <input type="text" name="jenis_pakaian" value="{{ old('jenis_pakaian', $kebutuhan->jenis_pakaian) }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
+                        <x-input-error :messages="$errors->get('jenis_pakaian')" class="mt-2" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Jumlah</label>
+                        <input type="number" name="jumlah" value="{{ old('jumlah', $kebutuhan->jumlah) }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">
+                        <x-input-error :messages="$errors->get('jumlah')" class="mt-2" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Deskripsi</label>
+                        <textarea name="deskripsi" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full">{{ old('deskripsi', $kebutuhan->deskripsi) }}</textarea>
+                    </div>
+
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Simpan Perubahan</button>
+                </form>
+
+            </div>
         </div>
-        
-        {{-- Jumlah Total Dibutuhkan --}}
-        <div>
-            <label for="jumlah_total" class="block text-sm font-medium text-gray-700">Jumlah Total Dibutuhkan (Unit)</label>
-            <input type="number" name="jumlah_total" id="jumlah_total" required min="1"
-                   value="{{ old('jumlah_total', $kebutuhan->jumlah_total) }}"
-                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-            @error('jumlah_total')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        {{-- Deskripsi --}}
-        <div>
-            <label for="deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi Detail Kebutuhan (Ukuran, Warna, Kondisi)</label>
-            <textarea name="deskripsi" id="deskripsi" rows="4" 
-                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">{{ old('deskripsi', $kebutuhan->deskripsi) }}</textarea>
-            @error('deskripsi')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div class="flex items-center justify-end space-x-4">
-            <a href="{{ route('penerima.kebutuhan.index') }}" class="text-gray-600 hover:text-gray-800">Batal</a>
-            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md shadow-md">
-                Simpan Perubahan
-            </button>
-        </div>
-    </form>
-</x-penerima-layout>
+    </div>
+</x-app-layout>

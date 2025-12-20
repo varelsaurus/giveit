@@ -1,67 +1,75 @@
-{{-- resources/views/donatur/donasi/index.blade.php --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Donasi Saya') }}
+        </h2>
+    </x-slot>
 
-<x-donatur-layout>
-    <x-slot name="header">Daftar Donasi Saya</x-slot>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            
+            {{-- Alert Success --}}
+            @if(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Riwayat Donasi</h3>
+                    
+                    {{-- PERBAIKAN 1: Hapus 'donatur.' jadi 'donasi.create' --}}
+                    <a href="{{ route('donasi.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded shadow">
+                        + Buat Donasi Baru
+                    </a>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($donasis as $donasi)
+                            <tr>
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ $donasi->nama_barang }}</td>
+                                <td class="px-6 py-4">{{ $donasi->jumlah }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {{ $donasi->status == 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        {{ ucfirst($donasi->status) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    {{-- PERBAIKAN 2: Ubah route edit --}}
+                                    <a href="{{ route('donasi.edit', $donasi->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>
+                                    
+                                    {{-- PERBAIKAN 3: Ubah route destroy --}}
+                                    <form action="{{ route('donasi.destroy', $donasi->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus donasi ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                    Belum ada donasi yang dibuat.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    @endif
-
-    <div class="flex justify-end mb-4">
-        <a href="{{ route('donatur.donasi.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-            + Unggah Donasi Baru
-        </a>
     </div>
-
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border">
-            <thead>
-                <tr>
-                    <th class="py-2 px-4 border-b">ID</th>
-                    <th class="py-2 px-4 border-b">Jenis Pakaian</th>
-                    <th class="py-2 px-4 border-b">Jumlah</th>
-                    <th class="py-2 px-4 border-b">Status</th>
-                    <th class="py-2 px-4 border-b">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($donasis as $donasi)
-                    <tr>
-                        <td class="py-2 px-4 border-b text-center">{{ $donasi->id }}</td>
-                        <td class="py-2 px-4 border-b">{{ $donasi->jenis_pakaian }}</td>
-                        <td class="py-2 px-4 border-b text-center">{{ $donasi->jumlah }}</td>
-                        <td class="py-2 px-4 border-b text-center">
-                            <span class="px-3 py-1 text-sm font-semibold rounded-full 
-                                @if ($donasi->status == 'Tersedia') bg-green-200 text-green-800
-                                @elseif ($donasi->status == 'Diajukan') bg-yellow-200 text-yellow-800
-                                @else bg-gray-200 text-gray-800 @endif">
-                                {{ $donasi->status }}
-                            </span>
-                        </td>
-                        <td class="py-2 px-4 border-b text-center space-x-2">
-                            <a href="{{ route('donatur.donasi.show', $donasi) }}" class="text-blue-600 hover:text-blue-800 text-sm">Lihat</a>
-                            
-                            @if ($donasi->status == 'Tersedia')
-                                <a href="{{ route('donatur.donasi.edit', $donasi) }}" class="text-yellow-600 hover:text-yellow-800 text-sm">Edit</a>
-                                
-                                <form action="{{ route('donatur.donasi.destroy', $donasi) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus donasi ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
-                                </form>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="py-4 text-center text-gray-500">
-                            Anda belum memiliki donasi yang diunggah.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</x-donatur-layout>
+</x-app-layout>

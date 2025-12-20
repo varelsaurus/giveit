@@ -1,48 +1,61 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Formulir Donasi') }}
+            {{ __('Edit Donasi') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    <div class="mb-6 bg-blue-50 p-4 rounded border border-blue-200">
-                        <h3 class="font-bold text-blue-800">Anda akan membantu:</h3>
-                        <p><strong>Permintaan:</strong> {{ $kebutuhan->jenis_pakaian }} ({{ $kebutuhan->jumlah }} pcs)</p>
-                        <p><strong>Penerima:</strong> {{ $kebutuhan->user->name }}</p>
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+
+                {{-- PERBAIKAN: Route arahkan ke 'donasi.update' --}}
+                <form action="{{ route('donasi.update', $donasi->id) }}" method="POST">
+                    @csrf
+                    @method('PUT') {{-- WAJIB ADA UNTUK UPDATE --}}
+
+                    {{-- NAMA BARANG --}}
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Nama Barang</label>
+                        <input type="text" name="nama_barang" 
+                               value="{{ old('nama_barang', $donasi->nama_barang) }}" 
+                               class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full"
+                               required>
+                        <x-input-error :messages="$errors->get('nama_barang')" class="mt-2" />
                     </div>
 
-                    <form action="{{ route('donatur.donasi.store') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="kebutuhan_id" value="{{ $kebutuhan->id }}">
+                    {{-- JUMLAH --}}
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Jumlah</label>
+                        <input type="number" name="jumlah" 
+                               value="{{ old('jumlah', $donasi->jumlah) }}" 
+                               class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full"
+                               required>
+                        <x-input-error :messages="$errors->get('jumlah')" class="mt-2" />
+                    </div>
+
+                    {{-- DESKRIPSI --}}
+                    <div class="mb-4">
+                        <label class="block font-medium text-sm text-gray-700">Deskripsi Barang</label>
+                        <textarea name="deskripsi" rows="3" 
+                                  class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full"
+                                  required>{{ old('deskripsi', $donasi->deskripsi) }}</textarea>
+                        <x-input-error :messages="$errors->get('deskripsi')" class="mt-2" />
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        {{-- PERBAIKAN: Tombol Batal arahkan ke 'donasi.index' --}}
+                        <a href="{{ route('donasi.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                            Batal
+                        </a>
                         
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Barang yang Anda Donasikan</label>
-                            <input type="text" name="nama_barang" value="{{ $kebutuhan->jenis_pakaian }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </div>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                            Update Donasi
+                        </button>
+                    </div>
 
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Jumlah yang Anda Kirim</label>
-                            <input type="number" name="jumlah" placeholder="Misal: 5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                            <p class="text-xs text-gray-500 mt-1">Anda tidak harus memenuhi semua permintaan, semampunya saja.</p>
-                        </div>
+                </form>
 
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Pesan / Deskripsi Barang</label>
-                            <textarea name="deskripsi" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3" required placeholder="Contoh: Barang bekas layak pakai, sudah dicuci bersih."></textarea>
-                        </div>
-
-                        <div class="flex items-center justify-end mt-4">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                Kirim Donasi
-                            </button>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     </div>

@@ -9,14 +9,13 @@ use Illuminate\Support\Facades\Auth;
 class KebutuhanController extends Controller
 {
     public function index() {
-        // Nama variabelnya pakai 's' (kebutuhans) karena datanya banyak
         $kebutuhans = KebutuhanPakaian::where('user_id', Auth::id())->get();
-        
-        // Kirim ke view
         return view('penerima.kebutuhan.index', compact('kebutuhans'));
     }
 
-    public function create() { return view('penerima.kebutuhan.create'); }
+    public function create() { 
+        return view('penerima.kebutuhan.create'); 
+    }
 
     public function store(Request $request) {
         $validated = $request->validate([
@@ -27,7 +26,9 @@ class KebutuhanController extends Controller
         $validated['user_id'] = Auth::id();
         
         KebutuhanPakaian::create($validated);
-        return redirect()->route('kebutuhan.index');
+        
+        // PERBAIKAN DI SINI:
+        return redirect()->route('penerima.kebutuhan.index')->with('success', 'Kebutuhan berhasil ditambahkan');
     }
 
     public function edit(KebutuhanPakaian $kebutuhan) {
@@ -35,12 +36,24 @@ class KebutuhanController extends Controller
     }
 
     public function update(Request $request, KebutuhanPakaian $kebutuhan) {
-        $kebutuhan->update($request->all());
-        return redirect()->route('kebutuhan.index');
-    }
+    // 1. Validasi input dari form
+    $validated = $request->validate([
+        'jenis_pakaian' => 'required',
+        'jumlah' => 'required|integer', // Pastikan divalidasi
+        'deskripsi' => 'nullable'
+    ]);
+
+    // 2. Lakukan Update
+    // Karena 'jumlah' sudah ada di $fillable Model, baris ini akan mengupdate jumlah di DB
+    $kebutuhan->update($validated);
+    
+    return redirect()->route('penerima.kebutuhan.index')->with('success', 'Berhasil update!');
+}
 
     public function destroy(KebutuhanPakaian $kebutuhan) {
         $kebutuhan->delete();
-        return redirect()->route('kebutuhan.index');
+        
+        // PERBAIKAN DI SINI:
+        return redirect()->route('penerima.kebutuhan.index')->with('success', 'Kebutuhan berhasil dihapus');
     }
 }
