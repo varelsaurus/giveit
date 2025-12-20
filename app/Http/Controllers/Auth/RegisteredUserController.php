@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-// use App\Providers\RouteServiceProvider; // <--- HAPUS BARIS INI
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,19 +14,11 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -40,7 +31,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            // Default role saat register sendiri adalah donatur
+            
+            // Karena default register adalah donatur
             'role' => 'donatur', 
         ]);
 
@@ -49,8 +41,7 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         // --- PERBAIKAN DI SINI ---
-        // Ganti 'redirect(RouteServiceProvider::HOME)' dengan 'redirect(route('dashboard'))'
-        
-        return redirect()->route('dashboard'); 
+        // Arahkan langsung ke halaman list donasi
+        return redirect()->route('donasi.index'); 
     }
 }
