@@ -1,61 +1,47 @@
 <?php
-
 namespace App\Http\Controllers\Donatur;
 
 use App\Http\Controllers\Controller;
 use App\Models\Donasi;
-use App\Models\KebutuhanPakaian; // Model Kebutuhan
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DonasiController extends Controller
 {
-    // HALAMAN UTAMA DONATUR: Melihat Daftar Kebutuhan Yayasan
-    public function index()
-    {
-        // Tampilkan kebutuhan yang statusnya 'Belum Terpenuhi'
-        $daftarKebutuhan = KebutuhanPakaian::with('user')
-                            ->where('status', 'Belum Terpenuhi')
-                            ->latest()
-                            ->get();
-
-        return view('donatur.dashboard-donasi', compact('daftarKebutuhan'));
+    public function index() {
+        $donasis = Donasi::where('user_id', Auth::id())->latest()->get();
+        return view('donatur.donasi.index', compact('donasis'));
     }
 
-    // FORM DONASI: Saat Donatur klik "Bantu" pada salah satu kebutuhan
-    public function create($kebutuhanId)
-    {
-        $kebutuhan = KebutuhanPakaian::findOrFail($kebutuhanId);
-        return view('donatur.donasi.create', compact('kebutuhan'));
+    public function create() {
+        return view('donatur.donasi.create');
     }
 
-    // PROSES SIMPAN: Donatur mengirim barang untuk kebutuhan tsb
-    public function store(Request $request)
-    {
-        $request->validate([
-            'kebutuhan_id' => 'required|exists:kebutuhan_pakaians,id',
-            'nama_barang' => 'required|string', // Bisa diisi otomatis sama dengan nama kebutuhan
-            'deskripsi' => 'required|string',
-            'jumlah' => 'required|integer', 
-            // 'alamat_jemput' => 'required' // Jika ingin dijemput kurir
+    public function store(Request $request) {
+        $validated = $request->validate([
+            'nama_barang' => 'required',
+            'deskripsi' => 'required',
+            'jumlah' => 'required|integer',
         ]);
 
-        // 1. Simpan Donasi
-        $donasi = Donasi::create([
-            'user_id' => Auth::id(),
-            'kebutuhan_id' => $request->kebutuhan_id, // Link ke kebutuhan
-            'nama_barang' => $request->nama_barang,
-            'deskripsi' => $request->deskripsi,
-            'status' => 'Tersedia', // Tersedia untuk diproses Admin/Kurir
-            // Tambahkan field lain seperti alamat_jemput jika ada
-        ]);
+        $validated['user_id'] = Auth::id();
+        $validated['status'] = 'pending'; // Default status
 
-        // 2. (Opsional) Update status kebutuhan jika jumlah terpenuhi
-        // Logic ini bisa dikembangkan nanti, misal:
-        // $kebutuhan = KebutuhanPakaian::find($request->kebutuhan_id);
-        // if($request->jumlah >= $kebutuhan->jumlah) $kebutuhan->update(['status' => 'Terpenuhi']);
+        Donasi::create($validated);
+        return redirect()->route('donasi.index')->with('success', 'Donasi berhasil dibuat!');
+    }
 
-        return redirect()->route('donatur.donasi.index')
-                         ->with('success', 'Terima kasih! Donasi Anda telah tercatat. Admin akan memproses kurir.');
+    public function edit(Donasi $donasi) {
+        return view('donatur.donasi.edit', compact('donasi'));
+    }
+
+    public function update(Request $request, Donasi $donasi) {
+        $donasi->update($request->all());
+        return redirect()->route('donasi.index');
+    }
+
+    public function destroy(Donasi $donasi) {
+        $donasi->delete();
+        return redirect()->route('donasi.index');
     }
 }

@@ -12,10 +12,18 @@
                 <div class="p-6 text-gray-900">
                     {{-- Navigasi Admin --}}
                     <div class="mb-6 flex flex-wrap gap-4 border-b pb-2">
+                        {{-- Manage User (Route Resource) --}}
                         <a href="{{ route('admin.user.index') }}" class="text-blue-600 hover:text-blue-800 font-semibold">👤 Manage User</a>
+                        
+                        {{-- Manage Donasi (Custom Route) --}}
                         <a href="{{ route('admin.donasi.index') }}" class="text-purple-600 hover:text-purple-800 font-semibold">🎁 Manage Donasi</a>
+                        
+                        {{-- Persetujuan Pengajuan (Custom Route) --}}
                         <a href="{{ route('admin.pengajuan.index') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">📝 Persetujuan Pengajuan</a>
-                        <a href="{{ route('admin.report.donasi') }}" class="text-green-600 hover:text-green-800 font-semibold">📊 Report</a>
+                        
+                        {{-- Report (Route Resource) --}}
+                        {{-- PERBAIKAN: Ubah 'admin.report.donasi' menjadi 'admin.report.index' --}}
+                        <a href="{{ route('admin.report.index') }}" class="text-green-600 hover:text-green-800 font-semibold">📊 Report</a>
                     </div>
                     
                     {{-- SLOT WAJIB --}}

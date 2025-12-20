@@ -8,6 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
+            {{-- Alert Success/Error --}}
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
                     {{ session('success') }}
@@ -22,6 +23,7 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 
+                {{-- Header & Tombol Action --}}
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold text-gray-800">Daftar Permintaan Bantuan</h3>
                     
@@ -36,6 +38,7 @@
                     </div>
                 </div>
 
+                {{-- Tabel Data --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -48,26 +51,31 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            {{-- KUNCI PERBAIKAN: Gunakan forelse untuk meloop data --}}
-                            @forelse($kebutuhan as $item)
+                            {{-- PERBAIKAN: Gunakan $kebutuhans (Jamak) sesuai Controller --}}
+                            @forelse($kebutuhans as $item)
                             <tr>
                                 <td class="px-6 py-4 font-bold text-gray-800">{{ $item->jenis_pakaian }}</td>
                                 <td class="px-6 py-4">{{ $item->jumlah }} Pcs</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ Str::limit($item->deskripsi, 50) }}</td>
                                 <td class="px-6 py-4">
                                     @php
+                                        // Sesuaikan value case dengan Enum di Database Anda (biasanya lowercase)
                                         $statusClass = match($item->status) {
-                                            'Belum Terpenuhi' => 'bg-red-100 text-red-800',
-                                            'Terpenuhi' => 'bg-green-100 text-green-800',
+                                            'belum_terpenuhi' => 'bg-red-100 text-red-800',
+                                            'terpenuhi' => 'bg-green-100 text-green-800',
                                             default => 'bg-gray-100 text-gray-800'
                                         };
+                                        
+                                        // Format tampilan teks (Hilangkan underscore & Kapitalisasi)
+                                        $statusLabel = ucfirst(str_replace('_', ' ', $item->status));
                                     @endphp
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                        {{ $item->status }}
+                                        {{ $statusLabel }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    @if($item->status == 'Belum Terpenuhi')
+                                    {{-- Cek status (lowercase) --}}
+                                    @if($item->status == 'belum_terpenuhi')
                                         <a href="{{ route('penerima.kebutuhan.edit', $item->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>
                                         
                                         <form action="{{ route('penerima.kebutuhan.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus permintaan ini?');">

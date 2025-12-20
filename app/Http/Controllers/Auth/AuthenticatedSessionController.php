@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Models\User; 
-use App\Providers\RouteServiceProvider; 
 
 class AuthenticatedSessionController extends Controller
 {
@@ -24,14 +23,42 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
+    /**
+     * Handle an incoming authentication request.
+     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        // PANGGIL FUNGSI REDIRECT BERDASARKAN PERAN DI SINI
-        return $this->redirectBasedOnRole(Auth::user());
+        // --- MODIFIKASI DIMULAI DARI SINI ---
+        
+        // Ambil role user yang sedang login
+        $role = $request->user()->role;
+
+        // Cek role dan arahkan ke route yang sesuai
+        switch ($role) {
+            case 'admin':
+                // Arahkan admin ke Manage User
+                return redirect()->route('admin.user.index');
+            
+            case 'penerima':
+                // Arahkan penerima ke List Kebutuhan
+                return redirect()->route('penerima.kebutuhan.index');
+            
+            case 'kurir':
+                // Arahkan kurir ke Jadwal Pengantaran
+                return redirect()->route('kurir.jadwal.index');
+            
+            case 'donatur':
+                // Arahkan donatur ke List Donasi
+                return redirect()->route('donasi.index'); // Sesuaikan dengan nama route resource donasi Anda
+            
+            default:
+                // Fallback jika role tidak dikenali, ke dashboard umum
+                return redirect()->route('dashboard');
+        }
     }
     
     /**
@@ -61,7 +88,8 @@ class AuthenticatedSessionController extends Controller
                 return route('kurir.jadwal.index');
                 
             default:
-                return RouteServiceProvider::HOME;
+                // Opsi Paling Aman:
+                return redirect()->intended(route('dashboard', absolute: false));
         }
     }
 

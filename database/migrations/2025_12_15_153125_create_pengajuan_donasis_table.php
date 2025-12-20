@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up()
     {
+        // xxxx_create_donation_requests_table.php
         Schema::create('pengajuan_donasis', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Penerima
-            $table->foreignId('donasi_id')->constrained('donasis')->onDelete('cascade'); // Barang yg diminta
-            $table->text('alasan')->nullable();
-            // Status: Menunggu -> Disetujui Admin -> Kurir Menuju Lokasi -> Diterima -> Ditolak
-            $table->string('status')->default('Menunggu'); 
+            $table->foreignId('donasi_id')->constrained('donasis')->onDelete('cascade');
+            $table->text('alasan_pengajuan')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }

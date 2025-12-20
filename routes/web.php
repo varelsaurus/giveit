@@ -2,11 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+
+// --- IMPORT CONTROLLER ---
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DonasiManagementController;
-use App\Http\Controllers\Admin\UserController;
+// PENTING: Import Controller Report yang baru dibuat
+use App\Http\Controllers\Admin\ReportController; 
 use App\Http\Controllers\Donatur\DonasiController;
-use App\Http\Controllers\PenerimaDonor\KebutuhanPakaianController;
-use App\Http\Controllers\PenerimaDonor\PengajuanDonasiController;
+use App\Http\Controllers\Penerima\KebutuhanController;
+use App\Http\Controllers\Penerima\PengajuanController;
 use App\Http\Controllers\Kurir\JadwalController;
 
 /*
@@ -23,9 +27,6 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Rute untuk melihat donasi yang tersedia (bisa diakses oleh semua yang sudah login, termasuk Penerima)
-Route::middleware('auth')->get('/donasi-tersedia', [PengajuanDonasiController::class, 'availableDonations'])->name('donasi.available');
-
 /*
 |--------------------------------------------------------------------------
 | Authenticated (Role-Based) Routes
@@ -34,84 +35,82 @@ Route::middleware('auth')->get('/donasi-tersedia', [PengajuanDonasiController::c
 
 Route::middleware('auth')->group(function () {
 
-    // === ROLE ADMIN ===
+    // ====================================================
+    // 1. ROLE ADMIN
+    // ====================================================
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         
-        // 1-4. Manage User (CRUD)
-        Route::resource('user', UserController::class);
+        // CRUD User
+        Route::resource('user', AdminUserController::class);
 
-        // Manage Donasi
-        Route::get('donasi', [DonasiManagementController::class, 'index'])->name('donasi.index'); // Read semua donasi
-        // Rute untuk menampilkan form update status
-        Route::get('donasi/{donasi}/status', [DonasiManagementController::class, 'updateStatus'])->name('donasi.updateStatus'); 
-        // Rute untuk memproses update status
-        Route::patch('donasi/{donasi}/status', [DonasiManagementController::class, 'updateStatusProcess'])->name('donasi.updateStatusProcess'); 
-        Route::delete('donasi/{donasi}', [DonasiManagementController::class, 'destroy'])->name('donasi.destroy'); // Delete donasi
+        // --- MANAGE DONASI ---
+        Route::get('donasi', [DonasiManagementController::class, 'index'])->name('donasi.index'); 
         
-        // Persetujuan Pengajuan (Integrasi Kurir)
-        Route::get('pengajuan', [DonasiManagementController::class, 'listPengajuan'])->name('pengajuan.index'); // List Pengajuan Menunggu
-        Route::post('pengajuan/{pengajuan}/approve', [DonasiManagementController::class, 'approvePengajuan'])->name('pengajuan.approve'); // Proses Persetujuan & Buat Jadwal Kurir
+        // Update Status Donasi
+        Route::get('donasi/{id}/status', [DonasiManagementController::class, 'updateStatus'])->name('donasi.updateStatus');
+        Route::patch('donasi/{id}/status', [DonasiManagementController::class, 'updateStatusProcess'])->name('donasi.updateStatusProcess');
+        Route::delete('donasi/{id}', [DonasiManagementController::class, 'destroy'])->name('donasi.destroy');
         
-        // Report
-        Route::get('report/donasi', [DonasiManagementController::class, 'generateReport'])->name('report.donasi'); // Generate Report
+        // --- MANAGE PENGAJUAN (APPROVAL) ---
+        Route::get('pengajuan', [DonasiManagementController::class, 'listPengajuan'])->name('pengajuan.index');
+        Route::post('pengajuan/{id}/approve', [DonasiManagementController::class, 'approvePengajuan'])->name('pengajuan.approve');
 
+        // --- MANAGE REPORT (CREATE REPORT) ---
+        // Menggunakan ReportController (Fitur Arsip/Input Laporan)
+        // Ini menggantikan fitur print lama yang error variabel.
+        Route::resource('report', ReportController::class);
     });
 
-    // === ROLE DONATUR ===
-    Route::middleware('role:donatur')->prefix('donatur')->name('donatur.')->group(function () {
-    
-    // Halaman list kebutuhan (Dashboard Donatur)
-    Route::get('/kebutuhan-mendesak', [DonasiController::class, 'index'])->name('donasi.index');
-    
-    // Form Donasi (Merespon Kebutuhan Tertentu)
-    Route::get('/bantu/{kebutuhanId}', [DonasiController::class, 'create'])->name('donasi.create');
-    
-    // Simpan Donasi
-    Route::post('/donasi', [DonasiController::class, 'store'])->name('donasi.store');
-
-    });
-
-    // === ROLE PENERIMA DONOR ===
-    Route::middleware('role:penerima_donor')->prefix('penerima')->name('penerima.')->group(function () {
+    // ====================================================
+    // 2. ROLE DONATUR
+    // ====================================================
+    Route::middleware('role:donatur')->group(function () {
+        Route::resource('donasi', DonasiController::class);
         
-        // 1-4. Kebutuhan Pakaian (CRUD)
-        Route::resource('kebutuhan', KebutuhanPakaianController::class);
-
-        // Pengajuan Donasi
-        Route::get('pengajuan', [PengajuanDonasiController::class, 'index'])->name('pengajuan.index'); // Riwayat Pengajuan
-        Route::post('pengajuan/ajukan/{donasi}', [PengajuanDonasiController::class, 'store'])->name('pengajuan.store'); // Proses pengajuan baru
-        Route::patch('pengajuan/{pengajuan}', [PengajuanDonasiController::class, 'update'])->name('pengajuan.update'); // Update (misal: Batalkan)
-        Route::delete('pengajuan/{pengajuan}', [PengajuanDonasiController::class, 'destroy'])->name('pengajuan.destroy'); // Delete/Batalkan
-
+        // Opsional: Jika ingin donasi langsung ke kebutuhan tertentu
+        Route::get('donasi/bantu/{kebutuhan_id}', [DonasiController::class, 'create'])->name('donasi.bantu');
     });
 
-    // === ROLE KURIR ===
-    // routes/web.php
+    // ====================================================
+    // 3. ROLE PENERIMA
+    // ====================================================
+    Route::middleware('role:penerima')->prefix('penerima')->name('penerima.')->group(function () {
+        
+        // CRUD Kebutuhan Pakaian
+        Route::resource('kebutuhan', KebutuhanController::class);
 
-    Route::middleware(['auth', 'role:kurir'])->prefix('kurir')->name('kurir.')->group(function () {
-    // READ (Dashboard)
-    Route::get('/jadwal', [App\Http\Controllers\Kurir\JadwalController::class, 'index'])->name('jadwal.index');
-    
-    // CREATE (Form Ambil Tugas)
-    Route::get('/jadwal/create/{donasi_id}', [App\Http\Controllers\Kurir\JadwalController::class, 'create'])->name('jadwal.create');
-    Route::post('/jadwal/{donasi_id}', [App\Http\Controllers\Kurir\JadwalController::class, 'store'])->name('jadwal.store');
-    
-    // UPDATE (Form Edit Jadwal)
-    Route::get('/jadwal/{id}/edit', [App\Http\Controllers\Kurir\JadwalController::class, 'edit'])->name('jadwal.edit');
-    Route::put('/jadwal/{id}', [App\Http\Controllers\Kurir\JadwalController::class, 'update'])->name('jadwal.update');
+        // --- FITUR PENGAJUAN DONASI ---
+        
+        // 1. Lihat Donasi Tersedia (Katalog)
+        Route::get('donasi-tersedia', [PengajuanController::class, 'availableDonations'])->name('donasi.available');
 
-    // DELETE (Batalkan Tugas)
-    Route::delete('/jadwal/{id}', [App\Http\Controllers\Kurir\JadwalController::class, 'destroy'])->name('jadwal.destroy');
-    
-    // SELESAIKAN TUGAS (Action button saja)
-    Route::patch('/jadwal/{id}/selesai', [App\Http\Controllers\Kurir\JadwalController::class, 'selesaikan'])->name('jadwal.selesaikan');
+        // 2. Riwayat Pengajuan (Read)
+        Route::get('pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
+        
+        // 3. Ajukan Donasi (Create)
+        Route::post('donasi/{id}/ajukan', [PengajuanController::class, 'store'])->name('pengajuan.store');
+        
+        // 4. Update Pengajuan (Edit Alasan)
+        Route::patch('pengajuan/{id}', [PengajuanController::class, 'update'])->name('pengajuan.update');
+
+        // 5. Batalkan Pengajuan (Delete)
+        Route::delete('pengajuan/{id}', [PengajuanController::class, 'destroy'])->name('pengajuan.destroy');
     });
-    
-    // === PROFIL DEFAULT BREEZE (Untuk Semua Role) ===
+
+    // ====================================================
+    // 4. ROLE KURIR
+    // ====================================================
+    Route::middleware('role:kurir')->prefix('kurir')->name('kurir.')->group(function () {
+        Route::resource('jadwal', JadwalController::class);
+        Route::patch('jadwal/{id}/status', [JadwalController::class, 'updateStatus'])->name('jadwal.status');
+    });
+
+    // ====================================================
+    // PROFILE (Breeze Default)
+    // ====================================================
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 
 require __DIR__.'/auth.php';

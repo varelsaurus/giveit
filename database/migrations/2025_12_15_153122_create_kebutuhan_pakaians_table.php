@@ -9,22 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('kebutuhan_pakaians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('jenis_pakaian'); // atau nama_barang
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Penerima
+            $table->string('jenis_pakaian'); // Kemeja, Celana, dll
             $table->integer('jumlah');
             $table->text('deskripsi')->nullable();
-            
-            // PERBAIKANNYA DI SINI:
-            // Pastikan pakai tanda panah (->) sebelum default
-            $table->string('status')->default('Belum Terpenuhi'); 
-            
-            // Kalau mau pakai ENUM, penulisannya harus begini (jangan lupa panahnya):
-            // $table->enum('status', ['Belum Terpenuhi', 'Terpenuhi'])->default('Belum Terpenuhi');
-        
+            $table->enum('status', ['belum_terpenuhi', 'terpenuhi'])->default('belum_terpenuhi');
             $table->timestamps();
         });
     }

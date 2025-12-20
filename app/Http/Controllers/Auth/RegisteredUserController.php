@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
+// use App\Providers\RouteServiceProvider; // <--- HAPUS BARIS INI
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,8 +40,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            
-            // PASTIKAN BARIS INI ADA:
+            // Default role saat register sendiri adalah donatur
             'role' => 'donatur', 
         ]);
 
@@ -49,8 +48,9 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Redirect sesuai logic role (Opsional, tapi bagus)
-        // Kalau donatur, lempar ke dashboard donatur atau home
-        return redirect(RouteServiceProvider::HOME);
+        // --- PERBAIKAN DI SINI ---
+        // Ganti 'redirect(RouteServiceProvider::HOME)' dengan 'redirect(route('dashboard'))'
+        
+        return redirect()->route('dashboard'); 
     }
 }

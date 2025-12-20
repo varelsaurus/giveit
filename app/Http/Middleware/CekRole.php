@@ -11,30 +11,32 @@ class CekRole
 {
     /**
      * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        // 1. Cek User Login & Ketersediaan Role
+        // 1. Cek User Login
         if (!Auth::check()) {
-            return redirect('/login');
+            return redirect()->route('login');
         }
 
         $user = Auth::user();
 
-        // Cek jika role user kosong (kasus data lama/rusak)
+        // 2. Cek apakah role user kosong (safety check)
         if (!$user->role) {
-            abort(403, 'Akun Anda tidak memiliki Role yang valid.');
+            abort(403, 'Akun Anda tidak memiliki data Role yang valid.');
         }
 
-        // 2. Loop cek role
-        foreach ($roles as $role) {
-            // Panggil fungsi hasRole yang sudah diperbaiki di Model User
-            if ($user->hasRole($role)) {
-                return $next($request);
-            }
+        // 3. Cek Role menggunakan fungsi di Model User
+        // Variabel $roles di sini otomatis berbentuk Array (contoh: ['admin', 'kurir'])
+        // Kita oper langsung ke model User->hasRole()
+        if ($user->hasRole($roles)) {
+            return $next($request);
         }
 
-        // 3. Jika tidak ada yang cocok
-        abort(403, 'Akses Ditolak: Anda bukan ' . implode(' atau ', $roles));
+        // 4. Jika gagal, tampilkan pesan error yang jelas
+        // Ini akan memberitahu Anda role apa yang Anda miliki vs role apa yang dibutuhkan
+        abort(403, 'Akses Ditolak. Anda login sebagai: "' . $user->role . '". Halaman ini hanya untuk: "' . implode(', ', $roles) . '".');
     }
 }

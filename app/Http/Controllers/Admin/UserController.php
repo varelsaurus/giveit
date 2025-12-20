@@ -21,7 +21,12 @@ class UserController extends Controller
     // 2. CREATE: Menampilkan form tambah user
     public function create()
     {
-        return view('admin.users.create');
+        // Definisikan role apa saja yang tersedia di aplikasi
+        // Sesuai dengan enum di database yang kita buat sebelumnya
+        $roles = ['admin', 'donatur', 'penerima', 'kurir'];
+
+        // Kirim variabel $roles ke view menggunakan compact
+        return view('admin.users.create', compact('roles'));
     }
 
     // 3. STORE: Menyimpan user baru ke database

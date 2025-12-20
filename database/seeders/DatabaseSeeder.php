@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Penerima Manfaat',
             'email' => 'penerima@mail.com',
             'password' => Hash::make('password'),
-            'role' => 'penerima_donor', // Pastikan stringnya sama dengan logic di Controller
+            'role' => 'penerima', // Pastikan stringnya sama dengan logic di Controller
             'alamat' => 'Jl. Cibaduyut',
             'no_hp' => '081233334444',
         ]);
