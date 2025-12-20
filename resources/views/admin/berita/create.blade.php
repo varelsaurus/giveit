@@ -9,6 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
+                {{-- TAMBAHKAN enctype="multipart/form-data" AGAR BISA UPLOAD FILE --}}
                 <form action="{{ route('admin.berita.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
@@ -16,6 +17,13 @@
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Judul Berita</label>
                         <input type="text" name="judul" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="Contoh: Penyaluran Bantuan Banjir">
+                    </div>
+
+                    {{-- INPUT GAMBAR (BARU) --}}
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Utama (Opsional)</label>
+                        <input type="file" name="gambar" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Maks: 2MB.</p>
                     </div>
 
                     {{-- KONTEN --}}

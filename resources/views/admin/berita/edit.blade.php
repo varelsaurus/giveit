@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-                <form action="{{ route('admin.berita.update', $berita->id) }}" method="POST">
+                <form action="{{ route('admin.berita.update', $berita->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -17,6 +17,21 @@
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Judul Berita</label>
                         <input type="text" name="judul" value="{{ old('judul', $berita->judul) }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+
+                    {{-- INPUT GAMBAR --}}
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Utama</label>
+                        
+                        {{-- Preview Gambar Lama --}}
+                        @if($berita->gambar)
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/' . $berita->gambar) }}" alt="Gambar Berita" class="w-40 h-auto rounded shadow">
+                            </div>
+                        @endif
+
+                        <input type="file" name="gambar" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <p class="text-xs text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah gambar.</p>
                     </div>
 
                     {{-- KONTEN --}}
