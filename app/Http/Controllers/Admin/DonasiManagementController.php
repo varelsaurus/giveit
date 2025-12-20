@@ -26,12 +26,15 @@ class DonasiManagementController extends Controller
      */
     public function listPengajuan()
     {
-        $pengajuan = PengajuanDonasi::with(['donasi', 'user'])
-                                    ->where('status', 'Menunggu')
-                                    ->latest()
-                                    ->get();
-                        
-        return view('admin.pengajuan.index', compact('pengajuan'));
+        // Ambil data pengajuan yang statusnya 'pending' atau 'Menunggu'
+        // Pastikan nama variabelnya $pengajuans
+        $pengajuans = PengajuanDonasi::with(['user', 'donasi.user'])
+                        ->where('status', 'pending') // Sesuaikan dengan enum Anda (pending/Menunggu)
+                        ->latest()
+                        ->get();
+
+        // Kirim ke view dengan nama 'pengajuans'
+        return view('admin.pengajuan.index', compact('pengajuans'));
     }
 
     /**
