@@ -25,7 +25,7 @@ return new class extends Migration
             $table->text('deskripsi');
             $table->string('foto')->nullable();
             $table->integer('jumlah');
-            $table->enum('status', ['pending', 'diajukan', 'diproses', 'dikirim', 'selesai'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'proses_kurir', 'selesai'])->default('pending');
             $table->timestamps();
         });
     }

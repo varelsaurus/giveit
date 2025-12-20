@@ -57,7 +57,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     {{-- TOMBOL AMBIL (Mengarah ke Form Create) --}}
-                                    <a href="{{ route('kurir.jadwal.create', $donasi->id) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow text-sm">
+                                    <a href="{{ route('kurir.jadwal.create', ['donasi_id' => $donasi->id]) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow text-sm">
                                         Ambil & Atur Jadwal
                                     </a>
                                 </td>
@@ -100,33 +100,41 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     {{-- Menampilkan Tanggal Pengiriman --}}
-                                    {{ \Carbon\Carbon::parse($jadwal->tanggal_pengiriman)->format('d M Y, H:i') }}
+                                    {{ \Carbon\Carbon::parse($jadwal->tanggal_pengambilan)->format('d M Y') }}
                                 </td>
                                 <td class="px-6 py-4">
                                     {{-- Menampilkan Estimasi --}}
-                                    {{ $jadwal->estimasi_waktu }}
+                                    {{ $jadwal->estimasi_waktu ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        {{ $jadwal->status }}
+                                        {{ ucfirst($jadwal->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 flex flex-col space-y-2">
                                     
                                     <div class="flex space-x-2">
+                                        {{-- 1. TOMBOL EDIT --}}
                                         <a href="{{ route('kurir.jadwal.edit', $jadwal->id) }}" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-3 rounded text-xs">
                                             Edit
                                         </a>
 
-                                        <form action="{{ route('kurir.jadwal.selesaikan', $jadwal->id) }}" method="POST" onsubmit="return confirm('Selesaikan pengantaran ini?');">
+                                        {{-- 2. TOMBOL SELESAIKAN --}}
+                                        {{-- PERBAIKAN UTAMA: Menggunakan $jadwal->id (bukan $item->id) --}}
+                                        <form action="{{ route('kurir.jadwal.status', $jadwal->id) }}" method="POST" class="inline-block">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-xs">
-                                                Selesai
+                                            
+                                            {{-- Status 'delivered' sesuai Enum migration --}}
+                                            <input type="hidden" name="status" value="delivered">
+                                            
+                                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm" onclick="return confirm('Tandai tugas ini sebagai selesai?')">
+                                                Selesaikan
                                             </button>
                                         </form>
                                     </div>
 
+                                    {{-- 3. TOMBOL BATALKAN --}}
                                     <form action="{{ route('kurir.jadwal.destroy', $jadwal->id) }}" method="POST" onsubmit="return confirm('Batalkan tugas ini? Data akan kembali ke pool.');">
                                         @csrf
                                         @method('DELETE')

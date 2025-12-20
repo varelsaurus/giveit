@@ -9,28 +9,25 @@ class JadwalKurir extends Model
 {
     use HasFactory;
 
-    // Kita gunakan $fillable agar jelas kolom apa saja yang diizinkan
     protected $fillable = [
         'user_id',
         'donasi_id',
-        'pengajuan_id',
+        'pengajuan_id', // Opsional
+        'tanggal_pengambilan', // <--- INI WAJIB DITAMBAHKAN
+        'estimasi_waktu',
         'status',
-        'tanggal_pengiriman',
-        'estimasi_waktu', // Pastikan namanya ini
+        'catatan', // <--- INI JUGA DITAMBAHKAN
     ];
 
-    // Relasi ke User (Kurir)
-    public function kurir() {
-        return $this->belongsTo(User::class, 'user_id');
+    // Relasi ke User
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
-    // Relasi ke Donasi (Barang)
-    public function donasi() {
+    // Relasi ke Donasi
+    public function donasi()
+    {
         return $this->belongsTo(Donasi::class);
-    }
-    
-    // Relasi ke Pengajuan (Penerima - Jika ada)
-    public function pengajuan() {
-        return $this->belongsTo(PengajuanDonasi::class);
     }
 }
