@@ -46,22 +46,25 @@ Route::middleware('auth')->group(function () {
         // --- MANAGE DONASI ---
         Route::get('donasi', [DonasiManagementController::class, 'index'])->name('donasi.index'); 
         
-        // --- MANAGE BERITA (FIXED) ---
-        // Tambahkan parameters agar tidak dibaca sebagai 'beritum'
-        Route::resource('berita', BeritaController::class)->parameters([
-            'berita' => 'berita'
-        ]);
-
         // Update Status Donasi
         Route::get('donasi/{id}/status', [DonasiManagementController::class, 'updateStatus'])->name('donasi.updateStatus');
         Route::patch('donasi/{id}/status', [DonasiManagementController::class, 'updateStatusProcess'])->name('donasi.updateStatusProcess');
         Route::delete('donasi/{id}', [DonasiManagementController::class, 'destroy'])->name('donasi.destroy');
         
-        // --- MANAGE PENGAJUAN (APPROVAL) ---
+        // --- MANAGE PENGAJUAN (APPROVAL BARANG KELUAR) ---
         Route::get('pengajuan', [DonasiManagementController::class, 'listPengajuan'])->name('pengajuan.index');
         Route::post('pengajuan/{id}/approve', [DonasiManagementController::class, 'approvePengajuan'])->name('pengajuan.approve');
 
-        // --- MANAGE REPORT (CREATE REPORT) ---
+        // --- MANAGE KEBUTUHAN (WISHLIST PENERIMA) ---
+        // Ini route baru agar admin bisa melihat postingan kebutuhan penerima
+        Route::get('kebutuhan-penerima', [DonasiManagementController::class, 'listKebutuhan'])->name('kebutuhan.index');
+
+        // --- MANAGE BERITA ---
+        Route::resource('berita', BeritaController::class)->parameters([
+            'berita' => 'berita'
+        ]);
+
+        // --- MANAGE REPORT ---
         Route::resource('report', ReportController::class);
     });
 
@@ -70,8 +73,6 @@ Route::middleware('auth')->group(function () {
     // ====================================================
     Route::middleware('role:donatur')->group(function () {
         Route::resource('donasi', DonasiController::class);
-        
-        // Opsional: Jika ingin donasi langsung ke kebutuhan tertentu
         Route::get('donasi/bantu/{kebutuhan_id}', [DonasiController::class, 'create'])->name('donasi.bantu');
     });
 
@@ -79,25 +80,14 @@ Route::middleware('auth')->group(function () {
     // 3. ROLE PENERIMA
     // ====================================================
     Route::middleware('role:penerima')->prefix('penerima')->name('penerima.')->group(function () {
-        
         // CRUD Kebutuhan Pakaian
         Route::resource('kebutuhan', KebutuhanController::class);
 
         // --- FITUR PENGAJUAN DONASI ---
-        
-        // 1. Lihat Donasi Tersedia (Katalog)
         Route::get('donasi-tersedia', [PengajuanController::class, 'availableDonations'])->name('donasi.available');
-
-        // 2. Riwayat Pengajuan (Read)
         Route::get('pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
-        
-        // 3. Ajukan Donasi (Create)
         Route::post('donasi/{id}/ajukan', [PengajuanController::class, 'store'])->name('pengajuan.store');
-        
-        // 4. Update Pengajuan (Edit Alasan)
         Route::patch('pengajuan/{id}', [PengajuanController::class, 'update'])->name('pengajuan.update');
-
-        // 5. Batalkan Pengajuan (Delete)
         Route::delete('pengajuan/{id}', [PengajuanController::class, 'destroy'])->name('pengajuan.destroy');
     });
 
@@ -110,7 +100,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // ====================================================
-    // PROFILE (Breeze Default)
+    // PROFILE
     // ====================================================
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

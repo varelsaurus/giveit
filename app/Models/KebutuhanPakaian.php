@@ -9,20 +9,19 @@ class KebutuhanPakaian extends Model
 {
     use HasFactory;
 
-    // HAPUS baris 'protected $table' jika ada, ATAU pastikan ada 's' nya
+    // PASTIKAN NAMA TABEL BENAR (Sesuai database kamu)
     protected $table = 'kebutuhan_pakaians'; 
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'user_id',
+        'jenis_pakaian', // Atau 'nama_barang' (sesuaikan DB)
+        'jumlah',
+        'deskripsi',
+        'status',
+    ];
 
-    // Relasi ke User (Penerima)
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    // Relasi ke Donasi (Barang yang masuk untuk kebutuhan ini)
-    public function donasi()
-    {
-        return $this->hasMany(Donasi::class, 'kebutuhan_id');
     }
 }
