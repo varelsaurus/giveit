@@ -15,81 +15,80 @@ class DonasiManagementController extends Controller
      */
     public function index()
     {
-        // Menggunakan variabel $donasis (JAMAK) karena datanya banyak
+        // Mengambil semua donasi urut dari yang terbaru
         $donasis = Donasi::with('user')->latest()->get();
         return view('admin.donasi.index', compact('donasis'));
     }
 
     /**
      * 2. MENU PERSETUJUAN PENGAJUAN
-     * Menampilkan request barang dari Penerima yang statusnya 'Menunggu'.
+     * Menampilkan request barang dari Penerima yang statusnya 'pending' / 'Menunggu'.
      */
     public function listPengajuan()
     {
-        // Ambil data pengajuan yang statusnya 'pending' atau 'Menunggu'
-        // Pastikan nama variabelnya $pengajuans
+        // Pastikan nama variabel 'pengajuans' agar cocok dengan view
         $pengajuans = PengajuanDonasi::with(['user', 'donasi.user'])
-                        ->where('status', 'pending') // Sesuaikan dengan enum Anda (pending/Menunggu)
+                        ->where('status', 'pending') // Sesuaikan value ini dengan database pengajuan
                         ->latest()
                         ->get();
 
-        // Kirim ke view dengan nama 'pengajuans'
         return view('admin.pengajuan.index', compact('pengajuans'));
     }
 
     /**
      * 3. HALAMAN EDIT STATUS (Form Update)
-     * Mengatasi error 'Undefined variable $donasi'
+     * Menampilkan form untuk admin mengubah status donasi manual.
      */
     public function updateStatus($id)
     {
-        // Kita cari data berdasarkan ID
         $donasi = Donasi::findOrFail($id);
 
-        // PENTING: Variabel '$donasi' (TUNGGAL) dikirim ke view
-        // Ini biar cocok dengan compact('donasi')
-        return view('admin.donasi.edit-status', compact('donasi'));
+        // Pastikan nama view sesuai dengan file yang Anda buat sebelumnya
+        // (admin/donasi/update_status.blade.php)
+        return view('admin.donasi.update_status', compact('donasi'));
     }
 
     /**
      * 4. PROSES SIMPAN STATUS BARU
-     * Admin mengubah status manual (misal: Tersedia -> Butuh Kurir)
+     * Menangani perubahan status donasi ke database.
      */
     public function updateStatusProcess(Request $request, $id)
     {
-        $request->validate([
-            'status' => 'required|in:Tersedia,Butuh Kurir,Proses Pengiriman,Selesai'
-        ]);
-
         $donasi = Donasi::findOrFail($id);
-        
-        $donasi->update([
-            'status' => $request->status
+    
+        // VALIDASI: Value harus sama persis dengan ENUM di Database
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected,proses_kurir,selesai', 
         ]);
-
-        return redirect()->route('admin.donasi.index')->with('success', 'Status donasi berhasil diperbarui.');
+    
+        // Update Manual (Paling Aman untuk menghindari bug fillable)
+        $donasi->status = $request->status;
+        $donasi->save();
+    
+        return redirect()->route('admin.donasi.index')->with('success', 'Status donasi berhasil diperbarui!');
     }
 
     /**
      * 5. APPROVE PENGAJUAN
      * Saat Admin menyetujui pengajuan penerima.
-     * Logika: Status Pengajuan -> Disetujui, Status Donasi -> Butuh Kurir.
      */
     public function approvePengajuan(Request $request, $id)
     {
-        // Cari pengajuan
+        // Cari data pengajuan
         $pengajuan = PengajuanDonasi::findOrFail($id);
 
-        // 1. Ubah status pengajuan jadi Disetujui
-        $pengajuan->update(['status' => 'Disetujui Admin']);
+        // 1. Ubah status pengajuan jadi 'approved' (atau 'disetujui')
+        // Pastikan value ini sesuai dengan ENUM/Varchar di tabel 'pengajuan_donasis'
+        $pengajuan->update(['status' => 'approved']);
 
-        // 2. Ubah status Barang Donasi jadi 'Butuh Kurir'
-        // Supaya otomatis muncul di Dashboard Kurir
+        // 2. Ubah status Barang Donasi
+        // PERBAIKAN: Jangan gunakan 'Butuh Kurir' karena tidak ada di ENUM donasis.
+        // Gunakan 'approved' (artinya sudah diverifikasi admin & siap diambil kurir)
         if($pengajuan->donasi) {
-            $pengajuan->donasi->update(['status' => 'Butuh Kurir']);
+            $pengajuan->donasi->update(['status' => 'approved']);
         }
 
-        return back()->with('success', 'Pengajuan disetujui. Barang kini berstatus "Butuh Kurir".');
+        return back()->with('success', 'Pengajuan disetujui. Barang kini berstatus "Approved".');
     }
 
     /**
@@ -104,7 +103,7 @@ class DonasiManagementController extends Controller
     }
     
     /**
-     * 7. LAPORAN DONASI
+     * 7. LAPORAN DONASI (Opsional, jika masih dipakai)
      */
     public function generateReport()
     {
