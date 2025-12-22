@@ -57,17 +57,20 @@ class DonasiManagementController extends Controller
      */
     public function updateStatusProcess(Request $request, $id)
     {
-        $request->validate([
-            'status' => 'required|in:Tersedia,Butuh Kurir,Proses Pengiriman,Selesai'
-        ]);
-
         $donasi = Donasi::findOrFail($id);
-        
-        $donasi->update([
-            'status' => $request->status
+        // dd($request->all());
+
+        // VALIDASI: Value harus sama persis dengan ENUM di Database
+        $request->validate([
+            // Pastikan 'proses_kurir' ada di sini, JANGAN 'Butuh Kurir'
+            'status' => 'required|in:pending,approved,rejected,proses_kurir,selesai', 
         ]);
 
-        return redirect()->route('admin.donasi.index')->with('success', 'Status donasi berhasil diperbarui.');
+        // Update Manual
+        $donasi->status = $request->status;
+        $donasi->save();
+
+        return redirect()->route('admin.donasi.index')->with('success', 'Status donasi berhasil diperbarui!');
     }
 
     /**

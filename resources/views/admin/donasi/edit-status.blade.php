@@ -17,13 +17,41 @@
 
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">Status Saat Ini</label>
+                        
                         <select name="status" class="w-full border-gray-300 rounded shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            <option value="Tersedia" {{ $donasi->status == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                            <option value="Butuh Kurir" {{ $donasi->status == 'Butuh Kurir' ? 'selected' : '' }}>Butuh Kurir</option>
-                            <option value="Proses Pengiriman" {{ $donasi->status == 'Proses Pengiriman' ? 'selected' : '' }}>Proses Pengiriman</option>
-                            <option value="Selesai" {{ $donasi->status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                            {{-- Opsi 1: Pending --}}
+                            <option value="pending" {{ $donasi->status == 'pending' ? 'selected' : '' }}>
+                                Pending
+                            </option>
+
+                            {{-- Opsi 2: Approved (Tersedia) --}}
+                            <option value="approved" {{ $donasi->status == 'approved' ? 'selected' : '' }}>
+                                Approved (Tersedia)
+                            </option>
+                            
+                            {{-- Opsi 3: Rejected --}}
+                            <option value="rejected" {{ $donasi->status == 'rejected' ? 'selected' : '' }}>
+                                Rejected
+                            </option>
+
+                            {{-- Opsi 4: Proses Kurir (PERBAIKAN UTAMA DI SINI) --}}
+                            {{-- Value wajib 'proses_kurir', JANGAN 'Butuh Kurir' --}}
+                            <option value="proses_kurir" {{ $donasi->status == 'proses_kurir' ? 'selected' : '' }}>
+                                Proses Kurir
+                            </option>
+
+                            {{-- Opsi 5: Selesai --}}
+                            <option value="selesai" {{ $donasi->status == 'selesai' ? 'selected' : '' }}>
+                                Selesai
+                            </option>
                         </select>
-                        <p class="text-sm text-gray-500 mt-1">*Ubah ke "Butuh Kurir" agar muncul di dashboard kurir.</p>
+
+                        {{-- Tampilkan Error jika ada --}}
+                        @error('status')
+                            <p class="text-red-500 text-sm mt-1 font-bold">{{ $message }}</p>
+                        @enderror
+
+                        <p class="text-sm text-gray-500 mt-1">*Pilih "Proses Kurir" agar donasi masuk ke dashboard kurir.</p>
                     </div>
 
                     <div class="flex justify-end items-center space-x-3">

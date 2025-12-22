@@ -1,45 +1,68 @@
-<x-admin-layout>
+<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Update Status Donasi #{{ $donasi->id }}
+            {{ __('Update Status Donasi') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
 
-                    <form action="{{ route('admin.donasi.updateStatusProcess', $donasi->id) }}" method="POST">
-                        @csrf
-                        @method('PATCH')
-
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Jenis Pakaian</label>
-                            <input type="text" value="{{ $donasi->jenis_pakaian }}" disabled class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight bg-gray-100">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2">Status Saat Ini</label>
-                            <select name="status" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                <option value="Tersedia" {{ $donasi->status == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                                <option value="Diajukan" {{ $donasi->status == 'Diajukan' ? 'selected' : '' }}>Diajukan (Booked)</option>
-                                <option value="Dalam Pengiriman" {{ $donasi->status == 'Dalam Pengiriman' ? 'selected' : '' }}>Dalam Pengiriman</option>
-                                <option value="Selesai" {{ $donasi->status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
-                                <option value="Dibatalkan" {{ $donasi->status == 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                            </select>
-                        </div>
-
-                        <div class="flex items-center justify-end">
-                            <a href="{{ route('admin.donasi.index') }}" class="text-gray-600 mr-4">Batal</a>
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                Simpan Perubahan
-                            </button>
-                        </div>
-                    </form>
-
+                <div class="mb-6">
+                    <a href="{{ route('admin.donasi.index') }}" class="text-gray-500 hover:text-blue-600 flex items-center">
+                        &larr; Kembali ke Manage Donasi
+                    </a>
                 </div>
+
+                <div class="mb-6 border-b pb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Barang: {{ $donasi->nama_barang }}</h3>
+                    <p class="text-sm text-gray-500">Status Saat Ini: <span class="font-bold uppercase">{{ $donasi->status }}</span></p>
+                </div>
+
+                <form action="{{ route('admin.donasi.updateStatusProcess', $donasi->id) }}" method="POST">
+                    @csrf
+                    @method('PATCH')
+
+                    <div class="mb-4">
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Pilih Status Baru</label>
+                        
+                        <select name="status" id="status" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            {{-- PERBAIKAN: Value harus huruf kecil & pakai underscore (_) --}}
+                            
+                            <option value="pending" {{ $donasi->status == 'pending' ? 'selected' : '' }}>
+                                Pending
+                            </option>
+                            
+                            <option value="approved" {{ $donasi->status == 'approved' ? 'selected' : '' }}>
+                                Approved (Disetujui)
+                            </option>
+                            
+                            {{-- INI YANG SEBELUMNYA SALAH (Butuh Kurir -> proses_kurir) --}}
+                            <option value="proses_kurir" {{ $donasi->status == 'proses_kurir' ? 'selected' : '' }}>
+                                Proses Kurir
+                            </option>
+                            
+                            <option value="selesai" {{ $donasi->status == 'selesai' ? 'selected' : '' }}>
+                                Selesai
+                            </option>
+                            
+                            <option value="rejected" {{ $donasi->status == 'rejected' ? 'selected' : '' }}>
+                                Rejected (Ditolak)
+                            </option>
+                        </select>
+                        
+                        @error('status')
+                            <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+                        Simpan Perubahan
+                    </button>
+                </form>
+
             </div>
         </div>
     </div>
-</x-admin-layout>
+</x-app-layout>
