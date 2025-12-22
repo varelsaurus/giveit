@@ -43,72 +43,54 @@
                 </div>
 
                 {{-- KONTEN UTAMA PERSETUJUAN --}}
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold text-gray-700">Daftar Pengajuan Bantuan (Pending)</h3>
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="mb-4 border-b pb-2">
+                    <h3 class="text-lg font-bold text-indigo-700">Daftar Kebutuhan Penerima (Wishlist)</h3>
+                    <p class="text-sm text-gray-500">Daftar barang yang sedang dicari/dibutuhkan oleh penerima (Data "Gamis" kamu ada di sini).</p>
                 </div>
-
-                @if(session('success'))
-                    <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
+            
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 border">
-                        <thead class="bg-gray-100">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Pemohon</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Barang Donasi</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Alasan</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Penerima</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Barang Dicari</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Jumlah</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Deskripsi</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($pengajuans as $pengajuan)
+                            @forelse($kebutuhans as $item)
                             <tr>
                                 <td class="px-6 py-4">
-                                    <div class="text-sm font-bold text-gray-900">{{ $pengajuan->user->name }}</div>
-                                    <div class="text-xs text-gray-500">Penerima</div>
+                                    <div class="text-sm font-bold text-gray-900">{{ $item->user->name ?? 'User Dihapus' }}</div>
+                                    <div class="text-xs text-gray-500">{{ $item->user->email ?? '-' }}</div>
+                                </td>
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ $item->jenis_pakaian }}</td>
+                                <td class="px-6 py-4">{{ $item->jumlah }} Pcs</td>
+                                <td class="px-6 py-4 text-sm italic text-gray-600">
+                                    {{ Str::limit($item->deskripsi, 50) }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="text-sm text-gray-900">{{ $pengajuan->donasi->nama_barang }}</div>
-                                    <div class="text-xs text-gray-500">Dari: {{ $pengajuan->donasi->user->name }}</div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-600 italic">
-                                    "{{ Str::limit($pengajuan->alasan, 50) }}"
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        {{ ucfirst($pengajuan->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium">
-                                    {{-- Tombol Approve --}}
-                                    <form action="{{ route('admin.pengajuan.approve', $pengajuan->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Setujui pengajuan ini? Barang akan dialokasikan ke pemohon.')">
-                                        @csrf
-                                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded shadow text-xs">
-                                            ✔ Setujui
-                                        </button>
-                                    </form>
-                                    
-                                    {{-- Tombol Tolak (Opsional, jika ada route destroy/reject) --}}
-                                    {{-- 
-                                    <form action="..." method="POST" class="inline-block ml-2">
-                                        @csrf @method('DELETE')
-                                        <button class="text-red-600 font-bold text-xs">Tolak</button>
-                                    </form> 
-                                    --}}
+                                    @if($item->status == 'terpenuhi')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Terpenuhi</span>
+                                    @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Belum Terpenuhi</span>
+                                    @endif
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">Tidak ada pengajuan yang perlu disetujui.</td>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    Belum ada data kebutuhan yang masuk.
+                                </td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
+            </div>
 
             </div>
         </div>
